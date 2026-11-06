@@ -272,6 +272,50 @@ pre.log .hd{color:#a5b4fc}
     </section>
 
     <section class="card">
+      <h2>自动刮削 <span class="tag">定时扫描 / qBittorrent</span></h2>
+      <div class="row">
+        <label class="chk"><input type="checkbox" id="autoOn">开启自动刮削</label>
+        <span class="hint" id="autoState"></span>
+      </div>
+      <div class="sep"></div>
+      <div class="row">
+        <label class="chk"><input type="checkbox" id="autoScan" checked>定时扫描
+          <input type="number" id="autoScanMin" value="30" min="1" style="width:70px"> 分钟一次</label>
+        <label class="chk"><input type="checkbox" id="autoQbit">qBittorrent 联动</label>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <label class="field"><span>qBittorrent 地址</span>
+          <input type="text" id="qbitUrl" placeholder="http://127.0.0.1:8085" spellcheck="false"></label>
+        <label class="field"><span>轮询间隔（秒）</span>
+          <input type="number" id="qbitPoll" value="45" min="10"></label>
+        <label class="field"><span>用户名</span>
+          <input type="text" id="qbitUser" placeholder="admin" spellcheck="false"></label>
+        <label class="field"><span>密码</span>
+          <input type="text" id="qbitPass" placeholder="••••" spellcheck="false"></label>
+      </div>
+      <div class="sep"></div>
+      <div class="row">
+        <label class="chk"><input type="checkbox" id="autoSkipPt" checked>PT 保护（跳过 @GROUP / *.torrent 目录）</label>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <label class="field"><span>稳定期：文件早于 N 分钟才刮（避免误刮下载中）</span>
+          <input type="number" id="autoSettle" value="10" min="0"></label>
+        <label class="field"><span>自动刮削不下图（省流量）</span>
+          <select id="autoNoImg">
+            <option value="0">下载图片</option>
+            <option value="1">不下图</option>
+          </select></label>
+      </div>
+      <div class="actions">
+        <button class="primary" id="saveAuto">保存自动刮削设置</button>
+      </div>
+      <p class="hint">
+        找出「有视频但缺 nfo」的文件夹自动刮；稳定期与 PT 保护避免误刮下载中的文件或做种目录。
+        qBittorrent 联动只刮「刚下载完成」的目录（已处理过的不会重复刮）。
+      </p>
+    </section>
+
+    <section class="card">
       <h2>全局设置</h2>
       <div class="grid2">
         <label class="field"><span>代理地址（JavBus 用，留空 = 直连优先）</span>
@@ -381,6 +425,7 @@ async function loadStatus(){
     renderPills(d);
     renderRoots(d);
     renderHistory(d.jobs || []);
+    renderAuto(d.auto || {});
     if (!$('#root').value && d.media_root) $('#root').value = d.media_root;
     if (!$('#proxy').value && d.proxy) $('#proxy').value = d.proxy;
     $('#srvInfo').value = `v${d.version} · 端口 ${d.port} · Python ${d.deps.python}`;
@@ -418,6 +463,27 @@ function renderRoots(d){
   if (!list){ list = document.createElement('datalist'); list.id='rootlist'; document.body.appendChild(list); }
   list.innerHTML = dl;
   $('#root').setAttribute('list','rootlist');
+}
+
+function renderAuto(a){
+  const c = a.config || {}, s = a.status || {};
+  if (ST.autoDirty) return;           // 正在编辑时别覆盖用户输入
+  $('#autoOn').checked = !!c.enabled;
+  $('#autoScan').checked = c.scan_enabled !== false;
+  $('#autoScanMin').value = c.scan_interval_minutes ?? 30;
+  $('#autoQbit').checked = !!c.qbit_enabled;
+  $('#qbitUrl').value = c.qbit_url || '';
+  $('#qbitPoll').value = c.qbit_poll_seconds ?? 45;
+  $('#qbitUser').value = c.qbit_username || '';
+  $('#qbitPass').value = c.qbit_password || '';
+  $('#autoSkipPt').checked = c.skip_pt !== false;
+  $('#autoSettle').value = c.settle_minutes ?? 10;
+  $('#autoNoImg').value = c.no_images ? '1' : '0';
+  const sc = s.scan || {}, qb = s.qbit || {};
+  const ago = t => t ? Math.round((Date.now()/1000 - t)/60) + ' 分钟前' : '尚未运行';
+  $('#autoState').textContent = c.enabled
+    ? `上次扫描：${ago(sc.at)}（${sc.found ?? 0} 个待刮） · qBittorrent：${ago(qb.at)}（${qb.found ?? 0} 个新完成）`
+    : '未开启';
 }
 
 function badge(status){
@@ -620,6 +686,30 @@ $('#saveCfg').onclick = async () => {
     toast('设置已保存');
   }catch(e){ toast(e.message, true); }
 };
+
+$('#saveAuto').onclick = async () => {
+  try{
+    await api('/api/auto', {method:'POST', body:JSON.stringify({
+      enabled: $('#autoOn').checked,
+      scan_enabled: $('#autoScan').checked,
+      scan_interval_minutes: parseInt($('#autoScanMin').value || '30', 10),
+      qbit_enabled: $('#autoQbit').checked,
+      qbit_url: $('#qbitUrl').value.trim(),
+      qbit_poll_seconds: parseInt($('#qbitPoll').value || '45', 10),
+      qbit_username: $('#qbitUser').value.trim(),
+      qbit_password: $('#qbitPass').value,
+      skip_pt: $('#autoSkipPt').checked,
+      settle_minutes: parseInt($('#autoSettle').value || '10', 10),
+      no_images: $('#autoNoImg').value === '1',
+      via: ($('#javVia').value || 'auto')
+    })});
+    ST.autoDirty = false;
+    toast('自动刮削设置已保存');
+    loadStatus();
+  }catch(e){ toast(e.message, true); }
+};
+$$('#autoOn,#autoScan,#autoQbit,#autoSkipPt,#autoNoImg,#autoScanMin,#qbitUrl,#qbitPoll,#qbitUser,#qbitPass,#autoSettle')
+  .forEach(el => el.addEventListener('input', () => { ST.autoDirty = true; }));
 
 /* ---------------------------------------------------------------- 浏览 */
 async function openBrowse(target){

@@ -34,7 +34,7 @@ import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = os.environ.get("XIEYIN_DATA") or os.path.join(APP_DIR, "data")
 CONF_PATH = os.path.join(DATA_DIR, "config.json")
@@ -42,6 +42,9 @@ LOG_DIR = os.path.join(DATA_DIR, "logs")
 SCRIPTS = os.path.join(APP_DIR, "scripts")
 WWW = os.path.join(APP_DIR, "www")
 PYTHON = sys.executable or "/usr/bin/python3"
+
+sys.path.insert(0, SCRIPTS)
+import auto_watch  # noqa: E402
 
 DEFAULT_ROOTS = [
     "/vol1/1000/Media",
@@ -55,6 +58,20 @@ DEFAULT_CONF = {
     "jav": {"via": "auto", "recursive": True},
     "tmdb": {},
     "history_limit": 80,
+    "auto": {
+        "enabled": False,          # 自动刮削总开关
+        "scan_enabled": True,      # 定时扫描
+        "scan_interval_minutes": 30,
+        "qbit_enabled": False,     # qBittorrent 联动
+        "qbit_url": "http://127.0.0.1:8085",
+        "qbit_username": "",
+        "qbit_password": "",
+        "qbit_poll_seconds": 45,
+        "settle_minutes": 10,      # 稳定期：文件早于 N 分钟才刮
+        "skip_pt": True,           # PT 保护：跳过 @GROUP / *.torrent 目录
+        "no_images": False,
+        "via": "auto",
+    },
 }
 
 VIDEO_EXT = (".mp4", ".mkv", ".avi", ".ts", ".mov", ".wmv")
@@ -63,6 +80,7 @@ _jobs_lock = threading.Lock()
 _jobs: list["Job"] = []
 _current: "Job | None" = None
 _seq = 0
+_watcher: "auto_watch.AutoWatcher | None" = None
 
 
 # --------------------------------------------------------------------- 配置
@@ -320,7 +338,10 @@ def has_ffprobe() -> bool:
 def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
     kind = str(data.get("kind") or "").strip()
     conf = load_conf()
-    root = require_dir(str(data.get("root") or conf.get("media_root") or ""))
+    # 自动刮削按「指定文件夹列表」走，不强求根目录存在
+    dirs = [str(d) for d in (data.get("dirs") or []) if d] if kind == "jav" else []
+    raw_root = str(data.get("root") or conf.get("media_root") or "")
+    root = raw_root if dirs else require_dir(raw_root)
     proxy = str(data.get("proxy") or conf.get("proxy") or "").strip()
     no_probe = bool(data.get("no_probe")) or not has_ffprobe()
     env: dict[str, str] = {}
@@ -359,12 +380,16 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
     if kind == "jav":
         dry = bool(data.get("dry"))
         cmd = [PYTHON, os.path.join(SCRIPTS, "jav_scrape.py"),
-               "--root", root,
                "--log", os.path.join(LOG_DIR, "jav_scrape.log"),
                "--via", str(data.get("via") or "auto")]
+        if root:
+            cmd += ["--root", root]
         only = str(data.get("only") or "").strip()
         recursive = bool(data.get("recursive"))
-        if only:
+        if dirs:
+            for d in dirs:
+                cmd += ["--dirs", require_dir(d)]
+        elif only:
             cmd += ["--only", only]
         elif recursive:
             cmd += ["--scan", root]
@@ -380,9 +405,11 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
         if no_probe:
             cmd.append("--no-probe")
         title = "番号刮削 · " + ("预览" if dry else "开始")
+        if dirs:
+            title += "（%d 个目录）" % len(dirs)
         return ("jav", title, cmd, env,
                 {"root": root, "dry": dry, "recursive": recursive, "only": only,
-                 "limit": limit, "force": bool(data.get("force")),
+                 "dirs": dirs, "limit": limit, "force": bool(data.get("force")),
                  "via": str(data.get("via") or "auto")})
 
     if kind == "tmdb":
@@ -416,6 +443,19 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
 
 # --------------------------------------------------------------------- 状态
 
+def auto_trigger(kind: str, title: str, opts: dict) -> None:
+    """自动刮削回调：起一个 jav 任务；已有任务在跑就跳过本轮。"""
+    try:
+        data = {"kind": kind, "dry": False, **opts}
+        job_kind, job_title, cmd, env, meta = build_job(data)
+        start_job(job_kind, job_title, cmd, env=env, meta=meta)
+        log("自动触发：%s" % job_title)
+    except RuntimeError:
+        log("自动触发跳过（已有任务在跑）：%s" % title)
+    except Exception as e:
+        log("自动触发失败：%s —— %s" % (title, e))
+
+
 def status_dict() -> dict:
     conf = load_conf()
     with _jobs_lock:
@@ -438,6 +478,7 @@ def status_dict() -> dict:
         "running": running,
         "jobs": jobs,
         "roots": roots,
+        "auto": auto_status(),
         "deps": {
             "python": sys.version.split()[0],
             "ffprobe": shutil.which("ffprobe") or "",
@@ -448,6 +489,12 @@ def status_dict() -> dict:
         "paths": {"data": DATA_DIR, "logs": LOG_DIR, "scripts": SCRIPTS},
         "server_time": time.time(),
     }
+
+
+def auto_status() -> dict:
+    conf = load_conf().get("auto", {})
+    snap = _watcher.status() if _watcher else {}
+    return {"config": conf, "status": snap}
 
 
 # --------------------------------------------------------------------- HTTP
@@ -527,6 +574,8 @@ class Handler(BaseHTTPRequestHandler):
             self._static("favicon.ico")
         elif path == "/api/status":
             self._json(status_dict())
+        elif path == "/api/auto":
+            self._json({"ok": True, **auto_status()})
         elif path == "/api/browse":
             self._json(self._browse(qs.get("path", [""])[0]))
         elif path.startswith("/api/jobs/"):
@@ -538,6 +587,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urllib.parse.unquote(urllib.parse.urlsplit(self.path).path)
         if path == "/api/config":
             self._config_save()
+        elif path == "/api/auto":
+            self._auto_save()
         elif path == "/api/jobs":
             self._job_start()
         elif path.startswith("/api/jobs/") and path.endswith("/stop"):
@@ -594,6 +645,28 @@ class Handler(BaseHTTPRequestHandler):
         except OSError as e:
             return self._err(f"保存失败: {e}", 500)
         self._json({"ok": True, "config": conf})
+
+    def _auto_save(self) -> None:
+        data = self._read_json()
+        conf = load_conf()
+        auto = conf.setdefault("auto", {})
+        for key in ("enabled", "scan_enabled", "qbit_enabled", "skip_pt", "no_images"):
+            if key in data:
+                auto[key] = bool(data.get(key))
+        for key in ("scan_interval_minutes", "qbit_poll_seconds", "settle_minutes"):
+            if key in data:
+                try:
+                    auto[key] = max(0, int(data.get(key)))
+                except (TypeError, ValueError):
+                    return self._err("%s 必须是整数" % key)
+        for key in ("qbit_url", "qbit_username", "qbit_password", "via"):
+            if key in data:
+                auto[key] = str(data.get(key) or "").strip()
+        try:
+            save_conf(conf)
+        except OSError as e:
+            return self._err(f"保存失败: {e}", 500)
+        self._json({"ok": True, **auto_status()})
 
     def _job_start(self) -> None:
         data = self._read_json()
@@ -658,6 +731,15 @@ def main() -> int:
     save_conf(conf)
     bind = str(conf.get("bind") or "0.0.0.0")
     port = int(conf.get("port") or 22668)
+
+    global _watcher
+    _watcher = auto_watch.AutoWatcher(
+        conf_get=load_conf,
+        state_path=os.path.join(DATA_DIR, "auto_qbit_state.json"),
+        trigger=auto_trigger,
+        log=log)
+    _watcher.start()
+
     httpd = ThreadingHTTPServer((bind, port), Handler)
     httpd.daemon_threads = True
     log(f"撷引（xieyin） v{VERSION} 监听 {bind}:{port}，数据目录 {DATA_DIR}")
@@ -666,6 +748,8 @@ def main() -> int:
     except KeyboardInterrupt:
         pass
     finally:
+        if _watcher:
+            _watcher.stop()
         with _jobs_lock:
             for j in _jobs:
                 if j.status == "running":
