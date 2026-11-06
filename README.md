@@ -40,6 +40,7 @@
 | 番号 AV 刮削 | 从文件夹名解析番号，写 nfo、海报、fanart、thumb、演员与类别 | JavBus |
 | 电影刮削 | 从文件夹名/文件名解析片名与年份，匹配 TMDB；支持手动搜索词、TMDB ID | TMDB |
 | **自动刮削** | 定时扫描 / qBittorrent 联动，新增文件自动刮 | JavBus |
+| **STRM 支持** | `.strm` 流指针当媒体文件刮削，清理永不删它 | — |
 | 媒体体检 | 统计视频 / nfo / 图片，校验 nfo XML | 本地文件 |
 | 共享清理 | 每个文件夹只保留最大视频；可选去域名前缀 | 本地文件 |
 | 网络自检 | DoH / JavBus / TMDB / 图床 / ffprobe / 目录 / 代理 | — |
@@ -69,6 +70,22 @@
 > qBittorrent 联动只刮「刚下载完成」的目录，已处理过的（按 hash + 完成时间）不会重复刮。
 
 ---
+
+## STRM 支持
+
+`.strm` 是 Kodi / Jellyfin / Emby 的**流指针文件**：几百字节的文本，里面一个播放 URL，
+媒体库里当视频条目，真正播放时才去拉流。本项目把它当媒体文件刮削：
+
+- **刮削认 `.strm`**：`ABC-123.strm` → 写 `ABC-123.nfo` + 海报，正好符合
+  Kodi / Jellyfin 的同名约定
+- **清理永不删 `.strm`**：无条件保护，不删除、不改名
+- **自动跳过 ffprobe**：`.strm` 是文本，探测没有意义
+
+> 为什么清理要单独保护：`.strm` 太小，如果当普通视频处理，「每个文件夹只留最大视频」
+> 这条规则会把它当成垃圾全删光，整个 STRM 媒体库就废了。
+
+---
+
 
 
 ## PT 安全：默认不破坏做种文件
@@ -112,7 +129,7 @@
 然后：
 
 ```bash
-appcenter-cli install-fpk /path/to/xieyin-1.2.0-x86.fpk   # 或 -arm.fpk
+appcenter-cli install-fpk /path/to/xieyin-1.3.0-x86.fpk   # 或 -arm.fpk
 ```
 
 ### 方式二：应用中心手动安装
@@ -193,22 +210,23 @@ python3 tools/test_ip_validation.py
 python3 tools/test_scrape_parsing.py
 python3 tools/test_build_fpk.py
 python3 tools/test_auto_watch.py
+python3 tools/test_media_ext.py
 
 # 打包：默认一次产出 x86 与 arm 两份（需要 python3 + tar/gzip）
-python3 tools/build_fpk.py 1.2.0
+python3 tools/build_fpk.py 1.3.0
 
 # 也可以只打一个架构
-python3 tools/build_fpk.py 1.2.0 --platform x86
-python3 tools/build_fpk.py 1.2.0 --platform arm
+python3 tools/build_fpk.py 1.3.0 --platform x86
+python3 tools/build_fpk.py 1.3.0 --platform arm
 ```
 
 产出：
 
 ```
-dist/xieyin-1.2.0-x86.fpk
-dist/xieyin-1.2.0-x86.fpk.sha256
-dist/xieyin-1.2.0-arm.fpk
-dist/xieyin-1.2.0-arm.fpk.sha256
+dist/xieyin-1.3.0-x86.fpk
+dist/xieyin-1.3.0-x86.fpk.sha256
+dist/xieyin-1.3.0-arm.fpk
+dist/xieyin-1.3.0-arm.fpk.sha256
 ```
 
 > app.tgz 多架构共用（代码里没有原生二进制），只有 manifest 的 `platform` 行不同。
@@ -217,7 +235,7 @@ dist/xieyin-1.2.0-arm.fpk.sha256
 
 ```bash
 python3 tools/make_icons.py
-python3 tools/build_fpk.py 1.2.0
+python3 tools/build_fpk.py 1.3.0
 ```
 
 ### 项目结构
@@ -231,7 +249,7 @@ src/xieyin/
 └── app/
     ├── xieyin/              # 运行载荷
     │   ├── app_server.py    # 网页服务 + 任务调度
-    │   ├── scripts/         # 刮削 / 体检 / 清理 / 网络自检 / auto_watch.py
+    │   ├── scripts/         # 刮削 / 体检 / 清理 / 网络自检 / auto_watch / media_ext
     │   ├── www/index.html   # 单页界面
     │   └── *.sh             # 安装 / 单元 / 卸载
     └── ui/                  # 桌面入口
@@ -241,7 +259,8 @@ tools/
 ├── test_ip_validation.py
 ├── test_scrape_parsing.py
 ├── test_build_fpk.py
-└── test_auto_watch.py
+├── test_auto_watch.py
+└── test_media_ext.py
 ```
 
 ---
