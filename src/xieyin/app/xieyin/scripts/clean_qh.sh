@@ -41,10 +41,15 @@ is_domain_prefix() {
 
 # PT 发布名：xxx@GROUP / xxx@GROUP-10bit / xxx@GROUP（@ 在名字末尾，忽略扩展名）
 # 域名前缀形式 489155.com@VNDS-2850-C.mp4 不算 PT。
+# 只有干净的短后缀才当扩展名剥离，避免把 Movie.2024.1080p@GROUP 的 @GROUP 吃掉。
 is_pt_name() {
-  local b stem pre
+  local b stem ext pre
   b=$(basename -- "$1")
-  stem="${b%.*}"
+  stem="$b"
+  ext="${b##*.}"
+  if [ "$ext" != "$b" ] && [[ "$ext" =~ ^[A-Za-z0-9]{1,5}$ ]]; then
+    stem="${b%.*}"
+  fi
   [[ "$stem" == *@* ]] || return 1
   pre="${stem%%@*}"
   if is_domain_prefix "$pre"; then
