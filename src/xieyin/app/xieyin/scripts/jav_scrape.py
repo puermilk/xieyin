@@ -14,7 +14,7 @@ jav_scrape.py — 刮削 媒体目录里的番号 AV 文件夹
   python3 jav_scrape.py                       # 全部刮完
   选项: --no-probe 不跑 ffprobe 生成 fileinfo  --no-images 不下图
 """
-import argparse, html, json, os, re, shutil, ssl, socket, struct, subprocess, sys, tempfile, time
+import argparse, html, json, os, re, shutil, ssl, socket, subprocess, sys, tempfile, time
 import http.client, urllib.parse, urllib.request
 from datetime import datetime
 from pathlib import Path
