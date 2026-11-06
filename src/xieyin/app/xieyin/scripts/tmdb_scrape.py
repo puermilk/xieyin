@@ -13,6 +13,8 @@ import argparse, html, json, re, shutil, subprocess, sys, ssl, time, urllib.pars
 from datetime import datetime
 from pathlib import Path
 
+import media_ext
+
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 CTX = ssl.create_default_context()
@@ -325,7 +327,7 @@ def build_nfo(d, info, video_name):
 # ---------------------------------------------------------------- 主流程
 def do_folder(folder: Path, args):
     vids = [f for f in folder.iterdir()
-            if f.is_file() and f.suffix.lower() in (".mp4", ".mkv", ".avi", ".ts", ".mov")]
+            if f.is_file() and media_ext.is_video(f.name)]
     if not vids:
         return "SKIP  无视频"
     video = max(vids, key=lambda f: f.stat().st_size)
@@ -397,7 +399,7 @@ def do_folder(folder: Path, args):
                     if not thumb.exists():
                         shutil.copyfile(fanart, thumb)
 
-    info = {} if args.no_probe else ffprobe_info(video)
+    info = {} if (args.no_probe or not media_ext.is_probeable(video.name)) else ffprobe_info(video)
     nfo.write_text(build_nfo(d, info, video.name), encoding="utf-8")
     return (f"OK    {folder.name[:36]} <- TMDB {d['tmdbid']} | {d.get('title','')} ({d.get('year','')}) "
             f"| {d.get('releasedate','')} {d.get('runtime','')}分 | 导演 {len(d.get('directors',[]))} "

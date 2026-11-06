@@ -19,9 +19,11 @@ import http.client, urllib.parse, urllib.request
 from datetime import datetime
 from pathlib import Path
 
+import media_ext
+
 BASE = Path("/vol1/1000/Media")
 HOST = "www.javbus.com"
-VIDEO_EXT = (".mp4", ".mkv", ".avi", ".ts", ".mov", ".wmv")
+VIDEO_EXT = media_ext.MEDIA_EXT
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 DELAY = 1.8          # 请求间隔，别太猛
@@ -579,7 +581,7 @@ def scrape_one(sess, folder: Path, args):
     code = code_of(name)
     video = None
     for f in sorted(folder.iterdir()):
-        if f.is_file() and f.suffix.lower() in (".mp4", ".mkv", ".avi", ".ts", ".mov"):
+        if f.is_file() and media_ext.is_video(f.name):
             video = f; break
     if not video:
         return f"SKIP  {name}: 没有视频文件"
@@ -645,7 +647,7 @@ def scrape_one(sess, folder: Path, args):
                 time.sleep(0.3)
 
     # 3. fileinfo
-    info = {} if args.no_probe else ffprobe_info(video)
+    info = {} if (args.no_probe or not media_ext.is_probeable(video.name)) else ffprobe_info(video)
 
     # 4. nfo
     nfo.write_text(build_nfo(d, info, name), encoding="utf-8")

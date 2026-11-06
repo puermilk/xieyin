@@ -34,7 +34,7 @@ import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = os.environ.get("XIEYIN_DATA") or os.path.join(APP_DIR, "data")
 CONF_PATH = os.path.join(DATA_DIR, "config.json")
@@ -45,6 +45,7 @@ PYTHON = sys.executable or "/usr/bin/python3"
 
 sys.path.insert(0, SCRIPTS)
 import auto_watch  # noqa: E402
+import media_ext  # noqa: E402
 
 DEFAULT_ROOTS = [
     "/vol1/1000/Media",
@@ -74,7 +75,7 @@ DEFAULT_CONF = {
     },
 }
 
-VIDEO_EXT = (".mp4", ".mkv", ".avi", ".ts", ".mov", ".wmv")
+VIDEO_EXT = media_ext.MEDIA_EXT
 
 _jobs_lock = threading.Lock()
 _jobs: list["Job"] = []

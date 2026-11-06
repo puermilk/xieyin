@@ -26,13 +26,15 @@ import time
 import urllib.parse
 import urllib.request
 
-VIDEO_EXT = (".mp4", ".mkv", ".avi", ".ts", ".mov", ".wmv")
+import media_ext
+
+VIDEO_EXT = media_ext.MEDIA_EXT
 
 
 # ================================================================ 纯函数
 
 def has_video(names) -> bool:
-    return any(n.lower().endswith(VIDEO_EXT) for n in names)
+    return any(media_ext.is_video(n) for n in names)
 
 
 def has_nfo(names) -> bool:

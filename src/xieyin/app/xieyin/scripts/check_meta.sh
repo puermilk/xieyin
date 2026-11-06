@@ -14,7 +14,7 @@ echo
 
 mapfile -d '' VIDS < <(find "$DIR" -type f \
     \( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.avi' -o -iname '*.wmv' \
-       -o -iname '*.ts' -o -iname '*.mov' \) -print0)
+       -o -iname '*.ts' -o -iname '*.mov' -o -iname '*.strm' \) -print0)
 
 total=${#VIDS[@]}
 with_nfo=0

@@ -5,6 +5,7 @@
 # 规则：1) 每个文件夹只保留最大的视频（>500MB），删除其余视频
 #       2) 可选：文件名去掉 @ 之前的域名前缀：489155.com@VNDS-2850-C.mp4 -> VNDS-2850-C.mp4
 #       PT 保护：检测到 @GROUP 做种文件 / *.torrent 时拒绝执行，绝不改名或删除
+#       .strm 保护：流指针文件无条件不删、不改名（删了 STRM 库就废了）
 # 用法：clean_qh.sh dry   (只打印清单，不改动)
 #       clean_qh.sh run   (真正执行)
 # 环境：XIEYIN_PT_GUARD=1|0     PT 保护开关（默认 1）
@@ -27,6 +28,15 @@ cd "$BASE" || exit 1
 is_video() {
   case "${1,,}" in
     *.mp4|*.mkv|*.avi|*.mov|*.wmv|*.flv|*.m4v|*.mpg|*.mpeg|*.ts|*.webm|*.rmvb|*.iso) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# .strm 是 Kodi/Jellyfin 的流指针文件（几百字节的文本），永远不能删。
+# 也不算「视频」：否则「只留最大视频」会把它当垃圾淘汰掉。
+is_strm() {
+  case "${1,,}" in
+    *.strm) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -102,6 +112,10 @@ pass_cleanup() {
       R_KEEP=$((R_KEEP+1))
       continue
     fi
+    # .strm 无条件保护：它是流指针，删了整个 STRM 库就废了
+    if is_strm "$f"; then
+      continue
+    fi
     # 保留 nfo / 图片 / 字幕等附属文件，避免把刮削结果清掉
     if [ "$KEEP_SIDECARS" = "1" ] && ! is_video "$f"; then
       continue
@@ -127,6 +141,8 @@ pass_rename() {
   local f b pre post new
   R_REN=0
   while IFS= read -r -d '' f; do
+    # .strm 绝不改名：改了就和它的 nfo/图片对不上
+    is_strm "$f" && continue
     # 第二道保险：PT 发布名绝不改名
     is_pt_name "$f" && continue
     b=$(basename -- "$f")
