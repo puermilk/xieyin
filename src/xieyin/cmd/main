@@ -1,0 +1,52 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 xieyin contributors
+# xieyin — 应用中心 start/stop/status 入口
+#
+# 安装目录：$TRIM_APPDEST（FPK 内 app/ 的内容落在这里）
+# 运行目录：/usr/local/xieyin（systemd 单元里写死）
+set -u
+DIR=/usr/local/xieyin
+PORT=22668
+LOG=$DIR/pkg.log
+CMDDIR="$(cd "$(dirname "$0")" && pwd)"
+PAYLOAD="$("$CMDDIR/_common" 2>/dev/null || true)"
+
+log() { echo "$(date '+%F %T') main($1): $2" >> "$LOG" 2>/dev/null; }
+mkdir -p "$DIR" 2>/dev/null || true
+
+health() {
+    curl -s --max-time 3 "http://127.0.0.1:$PORT/api/status" 2>/dev/null | grep -q '"ok": *true'
+}
+
+case ${1:-} in
+start)
+    log start "payload=${PAYLOAD:-未找到}"
+    if [ -n "$PAYLOAD" ] && [ -x "$PAYLOAD/pkg_install.sh" ]; then
+        bash "$PAYLOAD/pkg_install.sh" >> "$LOG" 2>&1
+    else
+        # 兜底：运行文件已在位，只确保单元存在并拉起
+        [ -x "$DIR/setup_units.sh" ] && bash "$DIR/setup_units.sh" >> "$LOG" 2>&1
+        systemctl enable xieyin.service >/dev/null 2>&1
+        systemctl restart xieyin.service >> "$LOG" 2>&1
+    fi
+    for _ in $(seq 1 40); do
+        if health; then log start "服务就绪"; exit 0; fi
+        sleep 0.5
+    done
+    log start "服务未就绪"
+    tail -n 20 "$LOG" >&2 2>/dev/null || true
+    exit 1
+    ;;
+stop)
+    log stop "停止服务"
+    systemctl stop xieyin.service >/dev/null 2>&1
+    exit 0
+    ;;
+status)
+    if health; then exit 0; else exit 3; fi
+    ;;
+*)
+    exit 1
+    ;;
+esac

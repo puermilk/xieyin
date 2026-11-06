@@ -1,0 +1,18 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 xieyin contributors
+# xieyin 生命周期：安装前检查 Python3（服务端只用标准库）。
+set -u
+SELF_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "${SELF_DIR}/_common"
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "需要 fnOS 自带的 python3（/usr/bin/python3），未找到。" >&2
+    exit 1
+fi
+
+PAYLOAD="$("${SELF_DIR}/_common" 2>/dev/null || true)"
+if [ -n "${PAYLOAD:-}" ] && [ -x "$PAYLOAD/pkg_install.sh" ]; then
+    bash "$PAYLOAD/pkg_install.sh" && exit 0
+fi
+exit 0

@@ -1,0 +1,14 @@
+{
+    ".url": {
+        "xieyin.Application": {
+            "title": "撷引",
+            "desc": "番号 AV / TMDB 电影刮削 · 体检 · 清理（PT 保护）",
+            "icon": "images/icon_{0}.png",
+            "type": "url",
+            "protocol": "http",
+            "port": "22668",
+            "url": "/",
+            "allUsers": true
+        }
+    }
+}

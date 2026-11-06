@@ -1,0 +1,10 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 xieyin contributors
+# xieyin 生命周期：升级完成 —— 与安装相同，幂等。
+set -u
+PAYLOAD="$("$(cd "$(dirname "$0")" && pwd)/_common" 2>/dev/null || true)"
+if [ -n "${PAYLOAD:-}" ] && [ -x "$PAYLOAD/pkg_install.sh" ]; then
+    bash "$PAYLOAD/pkg_install.sh" && exit 0
+fi
+exit 0

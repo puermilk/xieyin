@@ -1,0 +1,5 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 xieyin contributors
+# xieyin：配置变更无需额外处理
+exit 0

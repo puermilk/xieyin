@@ -1,0 +1,39 @@
+#!/bin/bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 xieyin contributors
+# xieyin 生命周期公共逻辑：解析 FPK 载荷目录的绝对路径。
+#
+# FPK 内 app/ 的内容会落到「应用安装目录」下，不同 fnOS 版本 / install_type
+# 的落点可能是 target/xieyin、app/xieyin 或 xieyin 本身。
+# 命中标志：pkg_install.sh。
+set -u
+
+CANDIDATES="
+${TRIM_APPDEST:-}/xieyin
+${TRIM_APPDEST:-}/app/xieyin
+${TRIM_APPDEST:-}/target/xieyin
+${TRIM_APPDEST:-}/target/app/xieyin
+/var/apps/xieyin/target/xieyin
+/var/apps/xieyin/app/xieyin
+/var/apps/xieyin/xieyin
+"
+
+for c in $CANDIDATES; do
+    case "$c" in /*/xieyin) ;; *) continue ;; esac
+    if [ -x "$c/pkg_install.sh" ] || [ -x "$c/pkg_uninstall.sh" ]; then
+        echo "$c"
+        exit 0
+    fi
+done
+
+if [ -x /usr/local/xieyin/pkg_install.sh ]; then
+    echo /usr/local/xieyin
+    exit 0
+fi
+
+# 被 install_init / uninstall_init source 时不能直接 exit（那会把调用方一起结束），
+# 只有作为独立脚本在子 shell 里执行时才 exit。
+if [ "${BASH_SOURCE[0]}" != "$0" ]; then
+    return 1
+fi
+exit 1
