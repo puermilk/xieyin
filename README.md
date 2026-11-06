@@ -78,15 +78,25 @@
 
 ### 方式一：下载 FPK
 
-从 [Releases](https://github.com/puermilk/xieyin/releases) 下载最新 `xieyin-*.fpk`，然后：
+从 [Releases](https://github.com/puermilk/xieyin/releases) 下载对应架构的 FPK：
+
+| NAS 处理器 | 安装包 |
+|---|---|
+| Intel / AMD（x86_64） | `xieyin-<版本>-x86.fpk` |
+| ARM（aarch64 / arm64） | `xieyin-<版本>-arm.fpk` |
+
+> 两个包的代码完全相同（纯 Python 标准库 + shell，无原生二进制），只是 manifest 的
+> `platform` 字段不同。选错架构会被 fnOS 拒绝安装。
+
+然后：
 
 ```bash
-appcenter-cli install-fpk /path/to/xieyin-1.0.0.fpk
+appcenter-cli install-fpk /path/to/xieyin-1.1.0-x86.fpk   # 或 -arm.fpk
 ```
 
 ### 方式二：应用中心手动安装
 
-应用中心 → 手动安装 → 选择 `xieyin-1.0.0.fpk`。
+应用中心 → 手动安装 → 选择对应架构的 `xieyin-*.fpk`。
 
 安装完成后桌面出现 **撷引** 图标，点开是网页，默认端口 **22668**。
 
@@ -157,25 +167,35 @@ Example.Movie.2024.1080p.WEBRip
 git clone https://github.com/puermilk/xieyin.git
 cd xieyin
 
-# IP 验证行为测试（不联网）
+# 行为测试（不联网）
 python3 tools/test_ip_validation.py
+python3 tools/test_scrape_parsing.py
+python3 tools/test_build_fpk.py
 
-# 打包（需要 python3 + tar/gzip）
-python3 tools/build_fpk.py 1.0.0
+# 打包：默认一次产出 x86 与 arm 两份（需要 python3 + tar/gzip）
+python3 tools/build_fpk.py 1.1.0
+
+# 也可以只打一个架构
+python3 tools/build_fpk.py 1.1.0 --platform x86
+python3 tools/build_fpk.py 1.1.0 --platform arm
 ```
 
 产出：
 
 ```
-dist/xieyin-1.0.0.fpk
-dist/xieyin-1.0.0.fpk.sha256
+dist/xieyin-1.1.0-x86.fpk
+dist/xieyin-1.1.0-x86.fpk.sha256
+dist/xieyin-1.1.0-arm.fpk
+dist/xieyin-1.1.0-arm.fpk.sha256
 ```
+
+> app.tgz 多架构共用（代码里没有原生二进制），只有 manifest 的 `platform` 行不同。
 
 需要改图标时（依赖 Pillow）：
 
 ```bash
 python3 tools/make_icons.py
-python3 tools/build_fpk.py 1.0.0
+python3 tools/build_fpk.py 1.1.0
 ```
 
 ### 项目结构

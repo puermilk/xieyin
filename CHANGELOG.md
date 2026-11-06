@@ -1,5 +1,18 @@
 # 更新日志
 
+## 1.1.0 — 2026-11-06
+
+支持 ARM 架构，x86 与 arm 分别打包、分别发布。
+
+- 打包脚本 `tools/build_fpk.py` 重构为纯函数：`render_manifest` / `output_name` /
+  `normalize_platform`，并新增 9 个单元测试
+- `--platform x86|arm|all` 参数；默认一次产出两份 FPK
+- manifest 的 `platform` 字段按目标架构写入 `x86` 或 `arm`
+- 产物命名：`xieyin-<版本>-x86.fpk` / `xieyin-<版本>-arm.fpk`
+- app.tgz 多架构共用（纯 Python 标准库 + shell，无原生二进制）
+- 新增 `tools/test_scrape_parsing.py`：钉住 `code_of` 与 `parse_folder` 行为（11 个用例）
+- 移除 `jav_scrape.py` 中未使用的 `struct` 导入
+
 ## 1.0.0 — 2026-11-06
 
 首个公开版本。

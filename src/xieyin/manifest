@@ -1,5 +1,5 @@
 appname               = xieyin
-version               = 1.0.0
+version               = 1.1.0
 display_name          = 撷引
 desc                  = 撷引（xieyin）· 飞牛 fnOS 媒体元数据刮削工具：番号 AV（JavBus）、电影（TMDB）、媒体体检与共享清理。网页里选目录、点按钮即可运行，日志实时查看。纯 Python 标准库实现，不依赖 Docker。清理默认开启 PT 保护：检测到 @GROUP 做种文件或 *.torrent 会直接拒绝执行，绝不改名、删除；刮削也只新增 nfo/图片，不改视频文件名。
 platform              = x86
@@ -12,4 +12,4 @@ desktop_applaunchname = xieyin.Application
 ctl_stop              = true
 checkport             = true
 service_port          = 22668
-changelog             = 1.0.0：首个公开版本。撷引（xieyin）——撷取信息，引入媒体库。支持番号 AV（JavBus）与电影（TMDB）刮削、媒体体检、共享清理；网页操作与实时日志；清理默认开启 PT 保护；刮削只新增元数据、不覆盖已有图片；每次任务重新探测并验证 Javbus 真实 IP。
+changelog             = 1.1.0：支持 ARM 架构，x86 与 arm 分别打包（platform = x86 / arm）；打包脚本重构为纯函数并加单测；移除死导入。1.0.0：首个公开版本。
