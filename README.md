@@ -39,6 +39,7 @@
 |---|---|---|
 | 番号 AV 刮削 | 从文件夹名解析番号，写 nfo、海报、fanart、thumb、演员与类别 | JavBus |
 | 电影刮削 | 从文件夹名/文件名解析片名与年份，匹配 TMDB；支持手动搜索词、TMDB ID | TMDB |
+| **自动刮削** | 定时扫描 / qBittorrent 联动，新增文件自动刮 | JavBus |
 | 媒体体检 | 统计视频 / nfo / 图片，校验 nfo XML | 本地文件 |
 | 共享清理 | 每个文件夹只保留最大视频；可选去域名前缀 | 本地文件 |
 | 网络自检 | DoH / JavBus / TMDB / 图床 / ffprobe / 目录 / 代理 | — |
@@ -49,6 +50,26 @@
 - **不含任何影视内容，也不内置任何片源**
 
 ---
+
+## 自动刮削：文件增加了就自动刮
+
+两个触发源，都在网页「自动刮削」卡片里开关：
+
+| 触发源 | 原理 | 适合 |
+|---|---|---|
+| **定时扫描** | 每 N 分钟扫媒体目录，找出「有视频但缺 nfo」的文件夹 | 通用兜底，不依赖任何下载器 |
+| **qBittorrent 联动** | 轮询下载完成事件，只刮刚下完的目录 | 精准，不会误刮下到一半的文件 |
+
+两个保险（可配）：
+
+- **稳定期**（默认 10 分钟）：文件 mtime 早于 N 分钟才刮，避免误刮正在下载的文件
+- **PT 保护**（网页可开关，默认避开）：`@GROUP` / `*.torrent` 目录跳过，不写任何文件
+
+> 自动刮削同样遵守「只新增、不覆盖已有图片、不改视频文件名」。
+> qBittorrent 联动只刮「刚下载完成」的目录，已处理过的（按 hash + 完成时间）不会重复刮。
+
+---
+
 
 ## PT 安全：默认不破坏做种文件
 
@@ -91,7 +112,7 @@
 然后：
 
 ```bash
-appcenter-cli install-fpk /path/to/xieyin-1.1.0-x86.fpk   # 或 -arm.fpk
+appcenter-cli install-fpk /path/to/xieyin-1.2.0-x86.fpk   # 或 -arm.fpk
 ```
 
 ### 方式二：应用中心手动安装
@@ -171,22 +192,23 @@ cd xieyin
 python3 tools/test_ip_validation.py
 python3 tools/test_scrape_parsing.py
 python3 tools/test_build_fpk.py
+python3 tools/test_auto_watch.py
 
 # 打包：默认一次产出 x86 与 arm 两份（需要 python3 + tar/gzip）
-python3 tools/build_fpk.py 1.1.0
+python3 tools/build_fpk.py 1.2.0
 
 # 也可以只打一个架构
-python3 tools/build_fpk.py 1.1.0 --platform x86
-python3 tools/build_fpk.py 1.1.0 --platform arm
+python3 tools/build_fpk.py 1.2.0 --platform x86
+python3 tools/build_fpk.py 1.2.0 --platform arm
 ```
 
 产出：
 
 ```
-dist/xieyin-1.1.0-x86.fpk
-dist/xieyin-1.1.0-x86.fpk.sha256
-dist/xieyin-1.1.0-arm.fpk
-dist/xieyin-1.1.0-arm.fpk.sha256
+dist/xieyin-1.2.0-x86.fpk
+dist/xieyin-1.2.0-x86.fpk.sha256
+dist/xieyin-1.2.0-arm.fpk
+dist/xieyin-1.2.0-arm.fpk.sha256
 ```
 
 > app.tgz 多架构共用（代码里没有原生二进制），只有 manifest 的 `platform` 行不同。
@@ -195,7 +217,7 @@ dist/xieyin-1.1.0-arm.fpk.sha256
 
 ```bash
 python3 tools/make_icons.py
-python3 tools/build_fpk.py 1.1.0
+python3 tools/build_fpk.py 1.2.0
 ```
 
 ### 项目结构
@@ -209,14 +231,17 @@ src/xieyin/
 └── app/
     ├── xieyin/              # 运行载荷
     │   ├── app_server.py    # 网页服务 + 任务调度
-    │   ├── scripts/         # 刮削 / 体检 / 清理 / 网络自检
+    │   ├── scripts/         # 刮削 / 体检 / 清理 / 网络自检 / auto_watch.py
     │   ├── www/index.html   # 单页界面
     │   └── *.sh             # 安装 / 单元 / 卸载
     └── ui/                  # 桌面入口
 tools/
 ├── build_fpk.py
 ├── make_icons.py
-└── test_ip_validation.py
+├── test_ip_validation.py
+├── test_scrape_parsing.py
+├── test_build_fpk.py
+└── test_auto_watch.py
 ```
 
 ---
