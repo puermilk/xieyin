@@ -1,7 +1,7 @@
 appname               = xieyin
-version               = 1.3.0
+version               = 1.4.1
 display_name          = 撷引
-desc                  = 撷引（xieyin）· 飞牛 fnOS 媒体元数据刮削工具：番号 AV（JavBus）、电影（TMDB）、媒体体检与共享清理。网页里选目录、点按钮即可运行，日志实时查看。纯 Python 标准库实现，不依赖 Docker。清理默认开启 PT 保护：检测到 @GROUP 做种文件或 *.torrent 会直接拒绝执行，绝不改名、删除；刮削也只新增 nfo/图片，不改视频文件名。
+desc                  = 撷引（xieyin）· 飞牛 fnOS 媒体元数据刮削工具：番号 AV（国内直连多源竞速 jav321/javdb580）、电影（TMDB）、媒体体检与共享清理。网页里选目录、点按钮即可运行，日志实时查看。纯 Python 标准库实现，不依赖 Docker。清理默认开启 PT 保护：检测到 @GROUP 做种文件或 *.torrent 会直接拒绝执行，绝不改名、删除；刮削也只新增 nfo/图片，不改视频文件名。
 platform              = x86
 source                = thirdparty
 maintainer            = xieyin
@@ -12,4 +12,4 @@ desktop_applaunchname = xieyin.Application
 ctl_stop              = true
 checkport             = true
 service_port          = 22668
-changelog             = 1.3.0：支持 STRM 刮削（Kodi/Jellyfin 流指针）——番号/电影/自动刮削、体检都认 .strm；清理对 .strm 无条件不删不改名；.strm 自动跳过 ffprobe。1.2.0：自动刮削（定时扫描 + qBittorrent）。1.1.0：ARM 架构。1.0.0：首个公开版本。
+changelog             = 1.4.1：nfo 补写 runtime / runtimeinseconds（时长显示，原为死变量）；PT 图片保护修复（合法图片绝不覆盖，半截图自愈）；preflight_ttl 配置真正生效；补 7 个单测。1.4.0：国内直连多源竞速刮削——启动前 preflight 验证（带缓存）、多通道并发、快源先写 nfo / 慢源补字段；jav321 + javdb580 双源，零代理，字段白名单过滤磁力/播放链接；jav.engine=legacy 可回退原 JavBus 通道。1.3.0：支持 STRM 刮削（Kodi/Jellyfin 流指针）——番号/电影/自动刮削、体检都认 .strm；清理对 .strm 无条件不删不改名；.strm 自动跳过 ffprobe。1.2.0：自动刮削（定时扫描 + qBittorrent）。1.1.0：ARM 架构。1.0.0：首个公开版本。
