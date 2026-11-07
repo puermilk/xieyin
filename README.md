@@ -129,7 +129,7 @@
 然后：
 
 ```bash
-appcenter-cli install-fpk /path/to/xieyin-1.3.0-x86.fpk   # 或 -arm.fpk
+appcenter-cli install-fpk /path/to/xieyin-1.4.1-x86.fpk   # 或 -arm.fpk
 ```
 
 ### 方式二：应用中心手动安装
@@ -213,20 +213,20 @@ python3 tools/test_auto_watch.py
 python3 tools/test_media_ext.py
 
 # 打包：默认一次产出 x86 与 arm 两份（需要 python3 + tar/gzip）
-python3 tools/build_fpk.py 1.3.0
+python3 tools/build_fpk.py 1.4.1
 
 # 也可以只打一个架构
-python3 tools/build_fpk.py 1.3.0 --platform x86
-python3 tools/build_fpk.py 1.3.0 --platform arm
+python3 tools/build_fpk.py 1.4.1 --platform x86
+python3 tools/build_fpk.py 1.4.1 --platform arm
 ```
 
 产出：
 
 ```
-dist/xieyin-1.3.0-x86.fpk
-dist/xieyin-1.3.0-x86.fpk.sha256
-dist/xieyin-1.3.0-arm.fpk
-dist/xieyin-1.3.0-arm.fpk.sha256
+dist/xieyin-1.4.1-x86.fpk
+dist/xieyin-1.4.1-x86.fpk.sha256
+dist/xieyin-1.4.1-arm.fpk
+dist/xieyin-1.4.1-arm.fpk.sha256
 ```
 
 > app.tgz 多架构共用（代码里没有原生二进制），只有 manifest 的 `platform` 行不同。
@@ -235,7 +235,7 @@ dist/xieyin-1.3.0-arm.fpk.sha256
 
 ```bash
 python3 tools/make_icons.py
-python3 tools/build_fpk.py 1.3.0
+python3 tools/build_fpk.py 1.4.1
 ```
 
 ### 项目结构
