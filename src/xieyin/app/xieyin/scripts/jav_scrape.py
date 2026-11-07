@@ -519,6 +519,9 @@ def build_nfo(d, info, dirname):
         p.append(f"  <director>{cdata(d['director'])}</director>")
     if year:
         p.append(f"  <year>{year}</year>")
+    if mins != "0":
+        p.append(f"  <runtime>{mins}</runtime>")
+        p.append(f"  <runtimeinseconds>{int(mins) * 60}</runtimeinseconds>")
     p.append(f"  <sorttitle>{cdata(title)}</sorttitle>")
     p.append("  <mpaa>NC-17</mpaa>")
     if d.get("releasedate"):
@@ -551,7 +554,8 @@ def build_nfo(d, info, dirname):
 # ---------------------------------------------------------------- 图片
 def crop_poster(src, dst, w=379, h=538):
     try:
-        from PIL import Image
+        from PIL import Image, ImageFile
+        ImageFile.LOAD_TRUNCATED_IMAGES = True   # 图床限速常返回半截 JPEG，仍可裁出 poster
         im = Image.open(src)
         iw, ih = im.size
         tw, th = w / h, iw / ih

@@ -1,10 +1,10 @@
 {
-  "_说明": "默认配置模板。实际生效的配置在 /usr/local/xieyin/data/config.json，也可以在网页「全局设置」里改。",
+  "_说明": "默认配置模板。实际生效的配置在 /usr/local/xieyin/data/config.json，也可以在网页「全局设置」里改。jav.engine: race=国内直连多源竞速（默认）/ legacy=原 JavBus 通道；jav.preflight_ttl 为启动前源验证缓存秒数。",
   "port": 22668,
   "bind": "0.0.0.0",
   "media_root": "/vol1/1000/Media",
   "proxy": "",
-  "jav": {"via": "auto", "recursive": true},
+  "jav": {"via": "auto", "recursive": true, "engine": "race", "preflight_ttl": 600},
   "tmdb": {},
   "history_limit": 80
 }

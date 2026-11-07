@@ -5,7 +5,8 @@
 """撷引（xieyin）—— fnOS 应用服务端（纯 Python 标准库）。
 
 把原来 Docker 版里的四个脚本包成一个常驻 Web 服务：
-  jav_scrape.py   番号 AV 刮削（JavBus）
+  race_scrape.py  番号 AV 刮削（国内直连多源竞速：jav321 / javdb580）
+  jav_scrape.py   番号 AV 刮削（JavBus 旧通道，engine=legacy 时回退用）
   tmdb_scrape.py  电影刮削（TMDB）
   check_meta.sh   媒体体检
   clean_qh.sh     共享清理
@@ -34,7 +35,7 @@ import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.3.0"
+VERSION = "1.4.1"
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = os.environ.get("XIEYIN_DATA") or os.path.join(APP_DIR, "data")
 CONF_PATH = os.path.join(DATA_DIR, "config.json")
@@ -56,7 +57,8 @@ DEFAULT_CONF = {
     "bind": "0.0.0.0",
     "media_root": "",
     "proxy": "",
-    "jav": {"via": "auto", "recursive": True},
+    # engine: race=国内直连多源竞速（默认） / legacy=原 JavBus 通道
+    "jav": {"via": "auto", "recursive": True, "engine": "race", "preflight_ttl": 600},
     "tmdb": {},
     "history_limit": 80,
     "auto": {
@@ -380,9 +382,16 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
 
     if kind == "jav":
         dry = bool(data.get("dry"))
-        cmd = [PYTHON, os.path.join(SCRIPTS, "jav_scrape.py"),
-               "--log", os.path.join(LOG_DIR, "jav_scrape.log"),
+        engine = str((conf.get("jav") or {}).get("engine") or "race")
+        legacy = engine == "legacy"
+        script = "jav_scrape.py" if legacy else "race_scrape.py"
+        logname = "jav_scrape.log" if legacy else "race_scrape.log"
+        cmd = [PYTHON, os.path.join(SCRIPTS, script),
+               "--log", os.path.join(LOG_DIR, logname),
                "--via", str(data.get("via") or "auto")]
+        if not legacy:
+            cmd += ["--preflight-ttl",
+                    str(int((conf.get("jav") or {}).get("preflight_ttl") or 600))]
         if root:
             cmd += ["--root", root]
         only = str(data.get("only") or "").strip()
@@ -411,7 +420,7 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
         return ("jav", title, cmd, env,
                 {"root": root, "dry": dry, "recursive": recursive, "only": only,
                  "dirs": dirs, "limit": limit, "force": bool(data.get("force")),
-                 "via": str(data.get("via") or "auto")})
+                 "via": str(data.get("via") or "auto"), "engine": engine})
 
     if kind == "tmdb":
         dry = bool(data.get("dry"))
