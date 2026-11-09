@@ -77,10 +77,13 @@ class Session:
             print(f"   IP 探测: 候选 {len(cand)} 个，可用 {len(self.ips)} 个 -> {', '.join(self.ips)}")
         # 直连通道是否真的探测通过（兜底判断要用）
         self.validated = bool(self.ips)
-        if not self.ips:
+        if not self.ips and validate:
             print("   ! 所有 IP 探测失败：暂时用硬编码 KNOWN_IPS 硬闯；"
                   "如果持续失败，请配置代理或更新 IP 列表", file=sys.stderr)
-            self.ips = KNOWN_IPS[:]      # 全探测失败就硬闯已知 IP
+        if not self.ips:
+            # validate=False（调用方随后会写入自己的 ips）或探测全失败时，
+            # 兜底成已知 IP 池。否则 _ip() 的 ipidx % len(self.ips) 会除零崩溃。
+            self.ips = KNOWN_IPS[:]
         self.ipidx = 0
 
     @staticmethod
@@ -418,7 +421,13 @@ def parse_page(page):
     d["actors"] = out
 
     m = re.search(r'class="bigImage" href="([^"]+)"', page)
-    d["cover"] = m.group(1) if m else ""
+    cov = m.group(1) if m else ""
+    # javbus 返回相对路径（/imgs/cover/xxx_b.jpg）；不补成绝对 URL 会被
+    # cover_candidates 的 http 前缀过滤丢掉，导致这类番号（DMM 不收录的
+    # 厂牌如 HEYZO）永远拿不到封面。
+    if cov.startswith("/"):
+        cov = "https://www.javbus.com" + cov
+    d["cover"] = cov
     d["samples"] = list(dict.fromkeys(
         re.findall(r'<a class="sample-box" href="([^"]+)"', page)))[:12]
     m = re.search(r'<meta name="description" content="([^"]*)"', page)
@@ -493,7 +502,19 @@ def fileinfo_xml(info):
 def cdata(s):
     return "<![CDATA[" + (s or "").replace("]]>", "]]]]><![CDATA[>") + "]]>"
 
-def build_nfo(d, info, dirname):
+def xml_esc(s):
+    return (s or "").replace("&", "&amp;").replace("<", "&lt;") \
+        .replace(">", "&gt;").replace('"', "&quot;")
+
+
+def build_nfo(d, info, dirname, stem=None, folder=None):
+    """stem = 视频文件主名；给出时写 <art> 图片引用（媒体服务器据此关联本地图片）。
+
+    folder 给出时，<art> 只引用**磁盘上真实存在**的图片：飞牛影视对不存在的
+    引用会报 `NFO image relative path not found` 并退化成扫描整个目录，
+    在平铺目录（多个视频同目录）里会把别的条目的封面错配过来。
+    无前缀 poster.jpg/folder.jpg 一律不写——平铺目录里它只可能属于其中一条。
+    """
     code = d.get("code") or dirname
     t = (d.get("title") or "").strip()
     for a in d.get("actors", []):          # 去掉标题末尾的演员名
@@ -501,11 +522,12 @@ def build_nfo(d, info, dirname):
             t = t[: -len(a)].strip()
     title = f"{code} {t}".strip()
     year = (d.get("releasedate") or "")[:4]
-    mins = re.sub(r"[^\d]", "", d.get("runtime", "")) or "0"
+    mins = re.sub(r"[^\d]", "", str(d.get("runtime", "") or "")) or "0"
     desc = d.get("desc") or ""
     plot = desc or title
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    p = ['﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>', "<movie>"]
+    p = ['﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>',
+         "<!-- xieyin:generated -->", "<movie>"]
     p.append(f"  <plot>{cdata(plot)}</plot>")
     p.append(f"  <outline>{cdata('發行日期 ' + (d.get('releasedate') or ''))}</outline>")
     p.append("  <customrating>NC-17</customrating>")
@@ -547,6 +569,35 @@ def build_nfo(d, info, dirname):
         p.append(f"  <label>{cdata(d['label'])}</label>")
     for g in d.get("genres", []):
         p.append(f"  <tag>{cdata(g)}</tag>")
+    if stem:
+        s = xml_esc(stem)
+
+        def _has(name):
+            return bool(folder) and (Path(folder) / name).is_file()
+
+        poster_f, fanart_f, thumb_f = (f"{stem}-poster.jpg", f"{stem}-fanart.jpg",
+                                       f"{stem}-thumb.jpg")
+        # 未给 folder（旧调用）时保持原行为；给了 folder 就只引用真实存在的文件
+        have_p = _has(poster_f) if folder else True
+        have_fa = _has(fanart_f) if folder else True
+        have_t = _has(thumb_f) if folder else True
+        if have_p or have_fa or have_t:
+            p.append("  <art>")
+            if have_p:
+                p.append(f"    <poster>{s}-poster.jpg</poster>")
+            if have_fa:
+                p.append(f"    <fanart>{s}-fanart.jpg</fanart>")
+            if have_t:
+                p.append(f"    <thumb>{s}-thumb.jpg</thumb>")
+            p.append("  </art>")
+        if have_p:
+            p.append(f'  <thumb aspect="poster" preview="{s}-poster.jpg">{s}-poster.jpg</thumb>')
+        if have_t:
+            p.append(f'  <thumb aspect="thumb">{s}-thumb.jpg</thumb>')
+        if have_fa:
+            p.append("  <fanart>")
+            p.append(f'    <thumb preview="{s}-fanart.jpg">{s}-fanart.jpg</thumb>')
+            p.append("  </fanart>")
     p.append("</movie>")
     return "\n".join(p) + "\n"
 
@@ -558,6 +609,11 @@ def crop_poster(src, dst, w=379, h=538):
         ImageFile.LOAD_TRUNCATED_IMAGES = True   # 图床限速常返回半截 JPEG，仍可裁出 poster
         im = Image.open(src)
         iw, ih = im.size
+        if iw > ih:
+            # 横版=双封面合成图（如 DMM pl 800x538 左右各一张）：
+            # 右半张才是正封面，中间裁会切出『两封面各一半+剧中图』（用户实测）
+            im = im.crop((iw // 2, 0, iw, ih))
+            iw, ih = im.size
         tw, th = w / h, iw / ih
         if iw / ih > tw:                 # 太宽 -> 中间裁两边
             nw = int(ih * tw); left = (iw - nw) // 2
@@ -573,10 +629,27 @@ def crop_poster(src, dst, w=379, h=538):
 
 
 def code_of(foldername):
-    """ABC-123-UC -> ABC-123 ; PRED- 566- UC -> XYZ-456 ; XYZ-789_FHD_CH -> XYZ-789"""
-    s = re.sub(r"[\s_]+", "", foldername).upper()
+    """ABC-123-UC -> ABC-123 ; PRED- 566- UC -> XYZ-456 ; XYZ-789_FHD_CH -> XYZ-789
+    KSBJ115C -> KSBJ-115（无横线+尾缀 UC/C 粘在数字后的野形态）
+    112312_786 -> 112312_786（日期型素人片，分隔符必须原样保留）
+    n0502 -> n0502（Tokyo Hot）"""
+    raw = str(foldername or "").strip()
+    # 日期型番号（MMDDYY-NNN / MMDDYY_NNN）：数字开头，通用规则一律识别不出。
+    # 分隔符要原样返回——javbus 认下划线形态，Caribbeancom 认横线形态。
+    # 前瞻而非消费字符：071516_340-C 的 -C 是尾缀，番号本身到 340 为止
+    m = re.match(r"(\d{6}[-_]\d{2,3})(?=[\s_\-]|$)", raw)
+    if m:
+        return m.group(1)
+    # Tokyo Hot：n0502 / k1234
+    m = re.match(r"([nk]\d{3,5})(?:[\s_]|$)", raw, re.I)
+    if m:
+        return m.group(1).lower()
+    s = re.sub(r"[\s_]+", "", raw).upper()
     m = re.match(r"([A-Z0-9]{2,10}-\d{3,6})", s)
-    return m.group(1) if m else ""
+    if m:
+        return m.group(1)
+    m = re.match(r"([A-Z]{2,10})(\d{3,6})(?:UC|C)?$", s)
+    return "%s-%s" % (m.group(1), m.group(2)) if m else ""
 
 
 # ---------------------------------------------------------------- 主流程
@@ -654,10 +727,34 @@ def scrape_one(sess, folder: Path, args):
     info = {} if (args.no_probe or not media_ext.is_probeable(video.name)) else ffprobe_info(video)
 
     # 4. nfo
-    nfo.write_text(build_nfo(d, info, name), encoding="utf-8")
+    nfo.write_text(build_nfo(d, info, name, stem, folder), encoding="utf-8")
     return (f"OK    {name} <- {d['code']} | {d.get('releasedate','')} "
             f"{d.get('runtime','')} | 演员 {len(d.get('actors',[]))} | "
             f"类别 {len(d.get('genres',[]))} | {(d.get('title') or '')[:46]}")
+
+
+def collect_units(folders):
+    """把文件夹列表展开成刮削单元 (文件夹, 视频, 番号)。
+
+    * 每个视频一个单元（多分片 / 一目录多片各刮各的）
+    * 番号优先取文件夹名，取不到回退视频文件名
+      （根目录直接放视频、任意命名目录都要能刮）
+    * 样片/预告片（-sample / -trailer 结尾）不算正片
+    """
+    units = []
+    for folder in folders:
+        if not folder.is_dir():
+            continue
+        fcode = code_of(folder.name)
+        for v in sorted(folder.iterdir()):
+            if not (v.is_file() and media_ext.is_video(v.name)):
+                continue
+            if re.search(r"[-_. ](sample|trailer)$", v.stem, re.I):
+                continue
+            code = fcode or code_of(v.stem)   # 去掉扩展名再解析，KSBJ115C.mp4 才能命中
+            if code:
+                units.append((folder, v, code))
+    return units
 
 
 def scan_video_folders(root: Path):

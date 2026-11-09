@@ -9,7 +9,9 @@ tmdb_scrape.py — 用 TMDB 刮削远程共享里的“真电影”（#recycle �
 
 用法: python3 tmdb_scrape.py [--dry] [--root DIR] [--force] [--no-probe]
 """
-import argparse, html, json, re, shutil, subprocess, sys, ssl, time, urllib.parse, urllib.request
+import argparse, html, json, os, re, shutil, subprocess, sys, ssl, time, urllib.parse, urllib.request
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import fnos_meta as fm
 from datetime import datetime
 from pathlib import Path
 
@@ -324,6 +326,26 @@ def build_nfo(d, info, video_name):
     p.append("</movie>")
     return "\n".join(p) + "\n"
 
+def write_movie_files(d, info, out_dir, video_name, nfo_name, raw_poster, raw_backdrop, args):
+    """落盘 nfo + 图片（out_dir 可为就地目录或 export 镜像目录）。"""
+    out_dir = Path(out_dir)
+    if raw_poster and raw_poster[:3] == b"\xff\xd8\xff":
+        poster = out_dir / "poster.jpg"
+        if not poster.exists() or args.force:
+            poster.write_bytes(raw_poster)
+            folder_jpg = out_dir / "folder.jpg"
+            if not folder_jpg.exists() or args.force:
+                shutil.copyfile(poster, folder_jpg)
+    if raw_backdrop and raw_backdrop[:3] == b"\xff\xd8\xff":
+        fanart = out_dir / "fanart.jpg"
+        if not fanart.exists() or args.force:
+            fanart.write_bytes(raw_backdrop)
+            thumb = out_dir / "thumb.jpg"
+            if not thumb.exists() or args.force:
+                shutil.copyfile(fanart, thumb)
+    (out_dir / nfo_name).write_text(build_nfo(d, info, video_name), encoding="utf-8")
+
+
 # ---------------------------------------------------------------- 主流程
 def do_folder(folder: Path, args):
     vids = [f for f in folder.iterdir()
@@ -331,7 +353,8 @@ def do_folder(folder: Path, args):
     if not vids:
         return "SKIP  无视频"
     video = max(vids, key=lambda f: f.stat().st_size)
-    nfo = video.with_suffix(".nfo")
+    nfo_name = video.stem + ".nfo"
+    nfo = folder / nfo_name
     if nfo.exists() and not args.force:
         return f"EXIST {nfo.name}"
 
@@ -378,29 +401,44 @@ def do_folder(folder: Path, args):
     if year and d.get("year") and d["year"] != year:
         print(f"   ! 年份不一致 文件夹={year} TMDB={d['year']}（仍继续）")
 
-    # 图片
+    info = {} if (args.no_probe or not media_ext.is_probeable(video.name)) else ffprobe_info(video)
+    sink = str(getattr(args, "sink", "inplace") or "inplace")
+    parts = [s for s in sink.split("+") if s]
+
+    # 封面/背景图（URL 进推送体；字节落盘用）
+    raw_poster = b""
+    raw_backdrop = b""
     if not args.no_images:
         if d.get("poster_path"):
-            raw = get(f"{IMG}/{d['poster_path']}.jpg")
-            if raw[:3] == b"\xff\xd8\xff":
-                poster = folder / "poster.jpg"
-                if not poster.exists():
-                    poster.write_bytes(raw)
-                    folder_jpg = folder / "folder.jpg"
-                    if not folder_jpg.exists():
-                        shutil.copyfile(poster, folder_jpg)
+            d["poster_url"] = f"{IMG}/{d['poster_path']}.jpg"
+            raw_poster = get(d["poster_url"])
         if d.get("backdrop_path"):
-            raw = get(f"{IMG}/{d['backdrop_path']}.jpg")
-            if raw[:3] == b"\xff\xd8\xff":
-                fanart = folder / "fanart.jpg"
-                if not fanart.exists():
-                    fanart.write_bytes(raw)
-                    thumb = folder / "thumb.jpg"
-                    if not thumb.exists():
-                        shutil.copyfile(fanart, thumb)
+            d["backdrop_url"] = f"{IMG}/{d['backdrop_path']}.jpg"
+            raw_backdrop = get(d["backdrop_url"])
 
-    info = {} if (args.no_probe or not media_ext.is_probeable(video.name)) else ffprobe_info(video)
-    nfo.write_text(build_nfo(d, info, video.name), encoding="utf-8")
+    if "push" in parts:
+        if fm.already_pushed(video) and not args.force:
+            return f"EXIST {video.name}: 已推送过"
+        payload = fm.build_payload(d, str(video.resolve()))
+        ok, msg = fm.push_meta(getattr(args, "fnos_url", ""),
+                               getattr(args, "fnos_token", ""), payload)
+        print(f"   {video.name} 推送飞牛 {'成功' if ok else '失败'}: {msg}")
+        if ok:
+            fm.mark_pushed(video)
+        elif "export" not in parts and "inplace" not in parts:
+            return f"FAIL  推送失败: {msg}"
+    if "export" in parts:
+        meta_dir = Path(getattr(args, "meta_dir", "") or "")
+        root = Path(getattr(args, "root", "") or "")
+        try:
+            rel = folder.resolve().relative_to(root.resolve())
+        except (ValueError, OSError):
+            rel = Path(folder.name)
+        out = meta_dir / rel
+        out.mkdir(parents=True, exist_ok=True)
+        write_movie_files(d, info, out, video.name, nfo_name, raw_poster, raw_backdrop, args)
+    if "inplace" in parts or not parts:
+        write_movie_files(d, info, folder, video.name, nfo_name, raw_poster, raw_backdrop, args)
     return (f"OK    {folder.name[:36]} <- TMDB {d['tmdbid']} | {d.get('title','')} ({d.get('year','')}) "
             f"| {d.get('releasedate','')} {d.get('runtime','')}分 | 导演 {len(d.get('directors',[]))} "
             f"| 演员 {len(d.get('cast',[]))} | 类型 {len(d.get('genres',[]))}")
@@ -418,7 +456,16 @@ def main():
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--no-probe", action="store_true")
     ap.add_argument("--no-images", action="store_true")
+    ap.add_argument("--sink", default="inplace",
+                    help="产物去向：push 推飞牛 / export 落元目录 / preview 零产出 / inplace 就地写")
+    ap.add_argument("--fnos-url", default=os.environ.get("XIEYIN_FNOS_URL", ""))
+    ap.add_argument("--fnos-token", default=os.environ.get("XIEYIN_FNOS_TOKEN", ""))
+    ap.add_argument("--meta-dir", default=os.environ.get("XIEYIN_META_DIR", ""))
     args = ap.parse_args()
+    bad = [s for s in str(args.sink).split("+")
+           if s not in ("push", "export", "preview", "inplace")]
+    if bad:
+        ap.error("--sink 只能是 push/export/preview/inplace 的组合（+连接），收到: %s" % args.sink)
 
     if args.dir:
         folders = [Path(d) for d in args.dir]

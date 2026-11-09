@@ -265,7 +265,7 @@ class AutoWatcher:
         targets = pick_targets(
             folders, now,
             int(conf.get("settle_minutes", 10)),
-            bool(conf.get("skip_pt", True)))
+            False)                 # 1.8.0：已移除 PT 保护，做种目录照常刮削
         self.last_scan = {"at": now, "found": len(targets), "root": root}
         if not targets:
             self.log("自动扫描：没有待刮目录")
@@ -320,9 +320,9 @@ class AutoWatcher:
             names = os.listdir(p)
             folders.append({"path": p, "names": names,
                             "mtimes": [_safe_mtime(os.path.join(p, n)) for n in names]})
-        targets = pick_targets(folders, now, settle, bool(conf.get("skip_pt", True)))
+        targets = pick_targets(folders, now, settle, False)  # 1.8.0：无 PT 保护
         if not targets:
-            self.log("qBittorrent：新完成 %d 个，但无需刮削（已刮 / PT / 未稳定）"
+            self.log("qBittorrent：新完成 %d 个，但无需刮削（已刮 / 未稳定）"
                      % len(completed))
             return
         self.log("qBittorrent：新完成 %d 个，刮削 %d 个" % (len(completed), len(targets)))

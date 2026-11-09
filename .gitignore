@@ -5,6 +5,9 @@ __pycache__/
 # 构建中间产物
 src/xieyin/app.tgz
 
+# 打包产物（走 GitHub Release 附件，不进仓库）
+dist/
+
 # 历史版本/本地备份
 dist-old/
 

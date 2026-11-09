@@ -159,3 +159,29 @@ class WatcherScanTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class NoPtProtectTest(unittest.TestCase):
+    """1.8.0：已移除 PT 保护——旧配置 skip_pt=True 也不再跳过做种目录。"""
+
+    def test_watcher_scans_pt_folder_even_with_legacy_conf(self):
+        import shutil
+        import tempfile
+        tmp = tempfile.mkdtemp(prefix="awpt-")
+        try:
+            d = os.path.join(tmp, "ABC-123")
+            os.makedirs(d)
+            for n in ("ABC-123.mkv", "ABC-123.torrent"):
+                with open(os.path.join(d, n), "w") as f2:
+                    f2.write("x")
+            full = {"media_root": tmp,
+                    "auto": {"enabled": True, "scan_enabled": True,
+                             "settle_minutes": 0, "skip_pt": True}}
+            calls = []
+            w = a.AutoWatcher(conf_get=lambda: full,
+                              state_path=os.path.join(tmp, "state.json"),
+                              trigger=lambda k, t, o: calls.append((k, t, o)))
+            w._run_scan(full)
+            self.assertEqual(len(calls), 1)      # 含 .torrent 的目录照常刮
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)

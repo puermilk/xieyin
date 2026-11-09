@@ -35,7 +35,7 @@ import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "1.4.1"
+VERSION = "2.0.0"
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = os.environ.get("XIEYIN_DATA") or os.path.join(APP_DIR, "data")
 CONF_PATH = os.path.join(DATA_DIR, "config.json")
@@ -60,6 +60,14 @@ DEFAULT_CONF = {
     # engine: race=国内直连多源竞速（默认） / legacy=原 JavBus 通道
     "jav": {"via": "auto", "recursive": True, "engine": "race", "preflight_ttl": 600},
     "tmdb": {},
+    # 方案A：飞牛影视 API 直连（元数据推送，PT 目录零写入）
+    "fnos": {
+        "enabled": True,        # 对接飞牛影视（主模式）
+        "url": "",              # 飞牛地址，如 http://127.0.0.1:5666
+        "token": "",            # 访问令牌（Bearer）
+        "export_nfo": False,    # 兜底选项：导出 NFO 到独立目录（兼容 Jellyfin/Emby）
+        "meta_dir": "",         # 独立元数据目录（export_nfo 开启时用）
+    },
     "history_limit": 80,
     "auto": {
         "enabled": False,          # 自动刮削总开关
@@ -71,13 +79,15 @@ DEFAULT_CONF = {
         "qbit_password": "",
         "qbit_poll_seconds": 45,
         "settle_minutes": 10,      # 稳定期：文件早于 N 分钟才刮
-        "skip_pt": True,           # PT 保护：跳过 @GROUP / *.torrent 目录
+        "skip_pt": False,          # 1.8.0 起无 PT 保护：该值不再生效，保留仅为兼容旧配置
         "no_images": False,
         "via": "auto",
     },
 }
 
 VIDEO_EXT = media_ext.MEDIA_EXT
+
+_fnos_token_backup = ""
 
 _jobs_lock = threading.Lock()
 _jobs: list["Job"] = []
@@ -226,6 +236,32 @@ class Job:
             "meta": self.meta,
         }
 
+    # -- 完成后 -------------------------------------------------------
+    def _after_success(self) -> None:
+        """1.8.2：刮削成功后把封面经飞牛影视官方图片接口同步进去（不删库）。
+
+        走 POST /image/temp/upload 上传封面（飞牛自行校验/转 webp/生成缩略图），
+        再用官方 getEditDetail/saveEditDetail 把 posters 指向返回的 hash_path；
+        飞牛随即把图从 temp 移到正式目录并删除旧截图封面，约 5 秒生效。
+        删库重建（mbd_rebuild）降级为手动兜底，不再自动触发。
+        任何失败只写 WARN，不影响已成功的刮削任务与产物。
+        """
+        meta = self.meta or {}
+        root = str(meta.get("root") or "")
+        if (self.kind not in ("jav", "tmdb") or meta.get("dry")
+                or not root or self.status != "success"):
+            return
+        try:
+            import img_cache_sync
+            ok, lines = img_cache_sync.sync_covers(root, data_dir=DATA_DIR)
+            for line in lines:
+                self.append(line)
+            if not ok:
+                self.append("[封面缓存] WARN 部分条目未同步；"
+                            "如需强制重建媒体库请手动执行 mbd_rebuild")
+        except Exception as e:
+            self.append("[封面缓存] WARN 封面缓存同步跳过：%s" % e)
+
     # -- 执行 ---------------------------------------------------------
     def _run(self) -> None:
         try:
@@ -258,6 +294,7 @@ class Job:
                 self.status = "stopped"
             elif rc == 0:
                 self.status = "success"
+                self._after_success()
             elif self.kind == "clean" and rc == 2:
                 self.status = "blocked"      # PT 保护中止，不是故障
             else:
@@ -338,6 +375,19 @@ def has_ffprobe() -> bool:
     return bool(shutil.which("ffprobe"))
 
 
+def resolve_sink(conf: dict) -> str:
+    """1.7.0 以刮削为主：始终就地写 NFO/封面进视频文件夹；
+    推送/导出仅在配置齐全时叠加，缺失即跳过（不再 E004 阻塞刮削）。"""
+    fn = conf.get("fnos") or {}
+    parts = []
+    if bool(fn.get("enabled", True)) and str(fn.get("url") or "").strip():
+        parts.append("push")
+    if bool(fn.get("export_nfo")) and str(fn.get("meta_dir") or "").strip():
+        parts.append("export")
+    parts.append("inplace")
+    return "+".join(parts)
+
+
 def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
     kind = str(data.get("kind") or "").strip()
     conf = load_conf()
@@ -350,6 +400,15 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
     env: dict[str, str] = {}
     if proxy:
         env["XIEYIN_PROXY"] = proxy
+    jc = conf.get("jav") or {}
+    if jc.get("concurrency"):
+        env["XIEYIN_CONCURRENCY"] = str(int(jc["concurrency"]))
+    if jc.get("timeout"):
+        env["XIEYIN_TIMEOUT"] = str(int(jc["timeout"]))
+    if jc.get("retries") is not None:
+        env["XIEYIN_RETRIES"] = str(int(jc["retries"]))
+    if conf.get("auth_key"):
+        env["XIEYIN_AUTH_KEY"] = str(conf["auth_key"])
 
     if kind == "net":
         env["XIEYIN_PY"] = PYTHON
@@ -369,19 +428,22 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
             raise ValueError("mode 只能是 dry 或 run")
         if mode == "run" and str(data.get("confirm") or "") != "CLEAN":
             raise ValueError("执行清理需要确认（confirm 必须是 CLEAN）")
-        pt_guard = bool(data.get("pt_guard", True))
+        pt_guard = bool(data.get("pt_guard", True))   # 做种目录守卫（防误删）保留
         env["XIEYIN_BASE"] = root
         env["XIEYIN_PT_GUARD"] = "1" if pt_guard else "0"
         env["XIEYIN_KEEP_SIDECARS"] = "1"
         title = "清理共享 · " + ("执行" if mode == "run" else "预览")
         if pt_guard:
-            title += "（PT 保护）"
+            title += "（做种保护）"
         return ("clean", title,
                 ["bash", os.path.join(SCRIPTS, "clean_qh.sh"), mode], env,
                 {"root": root, "mode": mode, "pt_guard": pt_guard})
 
     if kind == "jav":
         dry = bool(data.get("dry"))
+        # 1.7.0：inplace 恒在（刮削直接写文件夹）；push/export 配置齐全才叠加
+        fn = conf.get("fnos") or {}
+        sink = resolve_sink(conf)
         engine = str((conf.get("jav") or {}).get("engine") or "race")
         legacy = engine == "legacy"
         script = "jav_scrape.py" if legacy else "race_scrape.py"
@@ -392,6 +454,12 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
         if not legacy:
             cmd += ["--preflight-ttl",
                     str(int((conf.get("jav") or {}).get("preflight_ttl") or 600))]
+        cmd += ["--sink", sink]
+        if "push" in sink:
+            cmd += ["--fnos-url", str(fn.get("url") or ""),
+                    "--fnos-token", str(fn.get("token") or "")]
+        if "export" in sink:
+            cmd += ["--meta-dir", str(fn.get("meta_dir") or "")]
         if root:
             cmd += ["--root", root]
         only = str(data.get("only") or "").strip()
@@ -408,8 +476,19 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
             cmd += ["--limit", str(limit)]
         if dry:
             cmd.append("--dry")
+        # 条目级并发（与界面「并发数」不同：那是单条内的多源通道数）
+        if not legacy:
+            try:
+                cmd += ["--jobs", str(int((conf.get("jav") or {}).get("jobs") or 2))]
+            except Exception:
+                cmd += ["--jobs", "2"]
         if data.get("force"):
             cmd.append("--force")
+        if data.get("force_images"):
+            cmd.append("--force-images")
+        img_pol = str(data.get("image_policy") or (jc.get("image_policy") or "keep"))
+        if img_pol in ("keep", "replace", "smart"):
+            cmd += ["--image-policy", img_pol]
         if data.get("no_images"):
             cmd.append("--no-images")
         if no_probe:
@@ -420,14 +499,23 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
         return ("jav", title, cmd, env,
                 {"root": root, "dry": dry, "recursive": recursive, "only": only,
                  "dirs": dirs, "limit": limit, "force": bool(data.get("force")),
-                 "via": str(data.get("via") or "auto"), "engine": engine})
+                 "via": str(data.get("via") or "auto"), "engine": engine,
+                 "sink": sink})
 
     if kind == "tmdb":
         dry = bool(data.get("dry"))
+        fn = conf.get("fnos") or {}
+        sink = resolve_sink(conf)
         folder = str(data.get("folder") or "").strip()
         tmdb_id = re.sub(r"\D", "", str(data.get("tmdb_id") or ""))
         query = str(data.get("query") or "").strip()
-        cmd = [PYTHON, os.path.join(SCRIPTS, "tmdb_scrape.py"), "--root", root]
+        cmd = [PYTHON, os.path.join(SCRIPTS, "tmdb_scrape.py"), "--root", root,
+               "--sink", sink]
+        if "push" in sink:
+            cmd += ["--fnos-url", str(fn.get("url") or ""),
+                    "--fnos-token", str(fn.get("token") or "")]
+        if "export" in sink:
+            cmd += ["--meta-dir", str(fn.get("meta_dir") or "")]
         if folder:
             cmd += ["--dir", require_dir(folder)]
         if tmdb_id:
@@ -438,6 +526,11 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
             cmd.append("--dry")
         if data.get("force"):
             cmd.append("--force")
+        if data.get("force_images"):
+            cmd.append("--force-images")
+        img_pol = str(data.get("image_policy") or (jc.get("image_policy") or "keep"))
+        if img_pol in ("keep", "replace", "smart"):
+            cmd += ["--image-policy", img_pol]
         if data.get("no_images"):
             cmd.append("--no-images")
         if no_probe:
@@ -446,7 +539,7 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
         return ("tmdb", title, cmd, env,
                 {"root": root, "folder": folder, "dry": dry,
                  "tmdb_id": tmdb_id, "query": query,
-                 "force": bool(data.get("force"))})
+                 "force": bool(data.get("force")), "sink": sink})
 
     raise ValueError(f"未知任务类型: {kind}")
 
@@ -485,6 +578,10 @@ def status_dict() -> dict:
         "port": int(conf.get("port") or 22668),
         "media_root": conf.get("media_root") or detect_default_root(),
         "proxy": conf.get("proxy") or "",
+        "fnos": {**{k: v for k, v in (conf.get("fnos") or {}).items() if k != "token"},
+                 "has_token": bool((conf.get("fnos") or {}).get("token"))},
+        "has_auth_key": bool(conf.get("auth_key") or ""),
+        "jav": conf.get("jav") or {},
         "running": running,
         "jobs": jobs,
         "roots": roots,
@@ -582,6 +679,8 @@ class Handler(BaseHTTPRequestHandler):
             self._static("index.html")
         elif path == "/favicon.ico":
             self._static("favicon.ico")
+        elif path == "/icon.png":
+            self._static("icon.png")
         elif path == "/api/status":
             self._json(status_dict())
         elif path == "/api/auto":
@@ -638,8 +737,10 @@ class Handler(BaseHTTPRequestHandler):
         return {"ok": True, "path": path, "parent": parent, "entries": entries[:800]}
 
     def _config_save(self) -> None:
+        global _fnos_token_backup
         data = self._read_json()
         conf = load_conf()
+        _fnos_token_backup = str((conf.get("fnos") or {}).get("token") or "")
         if "media_root" in data:
             try:
                 conf["media_root"] = require_dir(str(data.get("media_root") or ""))
@@ -647,9 +748,15 @@ class Handler(BaseHTTPRequestHandler):
                 return self._err(str(e))
         if "proxy" in data:
             conf["proxy"] = str(data.get("proxy") or "").strip()
-        for key in ("jav", "tmdb"):
+        if "auth_key" in data:
+            conf["auth_key"] = str(data.get("auth_key") or "").strip()
+        for key in ("jav", "tmdb", "fnos"):
             if isinstance(data.get(key), dict):
                 _merge(conf[key], data[key])
+        # 访问令牌脱敏输入框语义：留空 = 保留旧值
+        if isinstance(data.get("fnos"), dict) and "token" in data["fnos"] \
+                and not str(data["fnos"].get("token") or "").strip():
+            conf.setdefault("fnos", {})["token"] = _fnos_token_backup
         try:
             save_conf(conf)
         except OSError as e:

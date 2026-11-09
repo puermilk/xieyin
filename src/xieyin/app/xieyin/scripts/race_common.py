@@ -19,11 +19,31 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 DOH_URL = "https://doh.pub/dns-query"
 
+
+def _env_int(name: str, default: int, lo: int, hi: int) -> int:
+    """读取整数型环境变量（由 app_server 按配置下传），越界即回退默认。"""
+    try:
+        v = int(os.environ.get(name, "") or default)
+    except ValueError:
+        return default
+    return max(lo, min(hi, v))
+
+
+# 高级设置（app_server 经 env 下传，可在网页「设置 → 高级」调整）
+CONCURRENCY = _env_int("XIEYIN_CONCURRENCY", 3, 1, 8)
+TIMEOUT = _env_int("XIEYIN_TIMEOUT", 12, 5, 120)
+RETRIES = _env_int("XIEYIN_RETRIES", 1, 0, 5)
+
 # DoH 被污染时的已知真实 IP（沿用 xieyin 原 KNOWN_IPS 机制）
 KNOWN_GOOD = {
     "www.jav321.com": ["139.162.115.161"],
     "javdb580.com": ["172.67.160.243", "104.21.9.179"],
     "c0.jdbstatic.com": ["172.67.156.24", "104.21.42.41"],
+    "www.javbus.com": ["104.25.112.111", "172.67.80.44", "104.25.111.111"],
+    "www.javdatabase.com": ["104.21.74.67", "172.67.200.42"],
+    "pics.dmm.com": ["54.230.70.96", "54.230.70.127", "54.230.70.13", "54.230.70.27"],
+    # 日期型番号（MMDDYY-NNN：素人/無修正）的唯一合规元数据源
+    "www.caribbeancom.com": ["104.18.19.203"],
 }
 
 # 静态排除：内容站 / 播放站 / 停放页 / 无按番号搜索能力 / 国内已阻断
@@ -50,12 +70,25 @@ _BAD = re.compile(r"magnet:|\.torrent|/watch|/stream|/download|\.m3u8|ed2k://", 
 CACHE_TTL = 600
 
 SOURCES = [
-    dict(name="jav321", host="www.jav321.com", feat="jav321",
-         probe="/video/adn00451", kind="scrape", role="快源"),
+    # jav321 已剔除：实测详情页恒 16s 超时（HTTP 0），真实 IP 也救不回来
+    dict(name="javbus", host="www.javbus.com", feat="JavBus",
+         probe="/ADN-451", kind="scrape", role="主力/快源(1-2s)"),
     dict(name="javdb580", host="javdb580.com", feat="JavDB",
-         probe="/search?q=ADN-451", kind="scrape", role="慢源/补字段"),
+         probe="/search?q=ADN-451", kind="scrape", role="补充字段"),
     dict(name="jdbstatic", host="c0.jdbstatic.com", feat=None,
          probe="/covers/1b/1BgmOn.jpg", kind="resource", role="封面图床"),
+    dict(name="dmm", host="pics.dmm.com", feat=None,
+         probe="/digital/video/ssis00109/ssis00109pl.jpg", kind="resource",
+         role="封面图床(DMM .com 镜像)"),
+    dict(name="dmm2", host="imgsrc.dmm.com", feat=None,
+         probe="/pics/digital/video/ssis00109/ssis00109pl.jpg", kind="resource",
+         role="封面图床(DMM 第二镜像)"),
+    dict(name="javdatabase", host="www.javdatabase.com", feat="JAV Database",
+         probe="/movies/ssis-001/", kind="scrape", role="末位兜底"),
+    # 日期型番号（071518-714 这类）专供：主流库全不收录，只有官网有
+    dict(name="caribbeancom", host="www.caribbeancom.com", feat="Caribbeancom",
+         probe="/moviepages/010120-001/index.html", kind="scrape",
+         role="日期型番号专用"),
 ]
 
 
@@ -85,14 +118,21 @@ def doh(name):
     return ips
 
 
-def curl(host, path, ip=None, timeout=16):
-    """零代理 HTTPS；--compressed 自动解 zstd/gzip；返回 (status, 压缩字节, 解压后 body)。"""
+def curl(host, path, ip=None, timeout=None, referer=None):
+    """零代理 HTTPS；--compressed 自动解 zstd/gzip；返回 (status, 压缩字节, 解压后 body)。
+
+    referer：javbus 图床有防盗链，必须带来源页才返回 200。
+    """
+    if timeout is None:
+        timeout = TIMEOUT
     fd, tmp = tempfile.mkstemp(prefix="xieyin-race-")
     os.close(fd)
     cmd = ["curl", "-s", "--compressed", "-m", str(timeout), "-A", UA,
            "-H", "Connection: close"]
     if ip:
         cmd += ["--resolve", "%s:443:%s" % (host, ip)]
+    if referer:
+        cmd += ["-e", referer]
     cmd += ["-o", tmp, "-w", "%{http_code}|%{size_download}", "https://" + host + path]
     try:
         out = subprocess.run(cmd, capture_output=True, text=True,
@@ -115,8 +155,11 @@ def curl(host, path, ip=None, timeout=16):
 
 def fetch_multi(host, path, ips, timeout=16, min_size=5000):
     """同一 URL 同时打『域名直连 + 每个候选 IP 硬连』，谁先返回有效内容用谁。"""
-    jobs = [None] + [i for i in ips if i]
-    with ThreadPoolExecutor(max_workers=max(1, len(jobs))) as ex:
+    # 只用调用方给的真实 IP（preflight/DoH 验证过的），不再掺系统 DNS：
+    # 本机系统 DNS 被污染（会解析到 Facebook 段假 IP），掺进去只会白占
+    # 一个并发槽位、白等一个超时。
+    jobs = [i for i in ips if i] or [None]
+    with ThreadPoolExecutor(max_workers=max(1, min(len(jobs), CONCURRENCY))) as ex:
         futs = {ex.submit(curl, host, path, ip, timeout): (ip or "dns") for ip in jobs}
         for f in as_completed(futs):
             st, sz, body = f.result()
@@ -155,25 +198,64 @@ def sanitize(d):
 
 
 def jpeg_ok(b):
-    """JPEG 必须同时有 SOI 和 EOI；图床限速时 -m 超时会返回半截文件。"""
-    return len(b) > 10000 and b[:3] == b"\xff\xd8\xff" and b[-2:] == b"\xff\xd9"
+    """完整 JPEG：SOI 开头 + EOI 收尾。
+
+    注意 DMM 等图床的图尾部常带 1~4 字节填充（如 0a），EOI 不一定在最后 2 字节，
+    必须按 rfind 定位 EOI 后允许少量尾随字节，否则会把完整图误判成半截图。
+    """
+    if len(b) <= 10000 or b[:3] != b"\xff\xd8\xff":
+        return False
+    eoi = b.rfind(b"\xff\xd9")
+    return eoi != -1 and len(b) - eoi <= 16
 
 
-def download_cover(url, timeout=22):
+def javdatabase_cid(code, timeout=12, retries=1):
+    """从 javdatabase 页面解析该片在 DMM 的真实 cid。
+
+    为什么需要：DMM 的 cid 除了 `label+5位数字`，还有大量内部前缀
+    （`h_068mxgs01438`、`18sprd01506`、`1stars00355`），直接推导会 302/无图。
+    javdatabase 的 og:image 恰好写着 `pics.dmm.co.jp/digital/video/<cid>/`，
+    等于免费的 cid 解析器。返回 "" 表示解析不到。
+    """
+    c = str(code or "").strip().lower().replace("_", "-")
+    if not c:
+        return ""
+    path = "/movies/%s/" % c
+    ips = KNOWN_GOOD.get("www.javdatabase.com", [])
+    for _ in range(max(1, retries)):
+        for ip in (list(ips) + [None]):   # 系统 DNS 实测必超时，优先固定 IP
+            st, _sz, body = curl("www.javdatabase.com", path, ip, timeout)
+            if st == 200 and body:
+                m = re.search(rb"pics\.dmm\.co\.jp/digital/video/([a-z0-9_]+)/", body)
+                if m:
+                    return m.group(1).decode("ascii", "ignore")
+    return ""
+
+
+def download_cover(url, timeout=12):
     """下图：域名直连 + 所有候选 IP 并发竞速；完整 JPEG 优先，否则降级取最大半截图。
 
     图床限速时 curl 常在 EOI 前被截断，严格只收完整图会导致整批无封面。
     fanart/thumb 对半截 JPEG 仍可显示，poster 裁剪由 LOAD_TRUNCATED_IMAGES 兜住。
     """
+    # DMM 图床：pics.dmm.co.jp 的 SNI 在部分网络（实测腾讯云）被阻断，
+    # pics.dmm.com 是同一 CloudFront、同路径同文件，SNI 未被封。统一重映射。
+    if url and "pics.dmm.co.jp" in url:
+        url = url.replace("pics.dmm.co.jp", "pics.dmm.com")
     m = re.match(r"https?://([^/]+)(.*)", url or "")
     if not m:
         return None
     host, path = m.group(1), m.group(2)
     ips = list(dict.fromkeys(doh(host) + KNOWN_GOOD.get(host, [])))
-    jobs = [None] + [i for i in ips if i]
+    # 只用调用方给的真实 IP（preflight/DoH 验证过的），不再掺系统 DNS：
+    # 本机系统 DNS 被污染（会解析到 Facebook 段假 IP），掺进去只会白占
+    # 一个并发槽位、白等一个超时。
+    jobs = [i for i in ips if i] or [None]
+    # javbus 自家图床有防盗链：不带 Referer 会 403，带了才 200
+    ref = "https://www.javbus.com/" if "javbus.com" in host else None
     best = None
     with ThreadPoolExecutor(max_workers=max(1, len(jobs))) as ex:
-        futs = {ex.submit(curl, host, path, ip, timeout): (ip or "dns") for ip in jobs}
+        futs = {ex.submit(curl, host, path, ip, timeout, ref): (ip or "dns") for ip in jobs}
         for f in as_completed(futs):
             st, sz, body = f.result()
             if st != 200 or len(body) < 10000 or body[:3] != b"\xff\xd8\xff":
@@ -190,6 +272,24 @@ def _preflight_one(c):
                                           c["probe"], c["kind"], c["role"])
     r = dict(name=name, host=host, role=role, ips=[], dns="", resolve=[],
              mode="", enabled=False, reason="", resource=False)
+    # javbus：年龄墙/反爬会把 curl 引去验证页，真实通道是 legacy Session
+    #（固定 IP 直连 + 换 IP 重试），探活也用它，避免误判
+    if name == "javbus":
+        try:
+            import jav_scrape as js
+            sess = js.Session(validate=True)
+            if sess.validated:
+                r["ips"] = list(sess.ips)
+                r["mode"] = "固定IP直连(Session)"
+                r["enabled"] = True
+                r["reason"] = "验证通过（Session 探活 %d IP）" % len(sess.ips)
+            else:
+                r["mode"] = "固定IP直连(Session)"
+                r["reason"] = "全部 IP 探活失败"
+            return r
+        except Exception as e:
+            r["reason"] = "javbus 探活异常 %s" % e
+            return r
     r["ips"] = doh(host)
     st, sz, body = curl(host, "/", timeout=10)
     r["dns"] = "%s/%dB(解压)" % (st, len(body))
@@ -222,9 +322,9 @@ def _preflight_one(c):
         r["mode"] = "resolve:" + good[0]
     else:
         r["mode"] = "由能力校验决定"
-    # 能力校验：按各源真实入口多通道并发，失败重试一轮
+    # 能力校验：按各源真实入口多通道并发，失败按 RETRIES 重试
     s3, b3, via3 = 0, b"", "none"
-    for _ in range(2):
+    for _ in range(1 + RETRIES):
         s3, z3, b3, via3 = fetch_multi(host, probe, r["ips"], timeout=18, min_size=5000)
         if s3 == 200:
             break
@@ -237,6 +337,9 @@ def _preflight_one(c):
         return r
     if probe.startswith("/video") and not re.search(r"出演者|メーカー|品番", t3):
         r["reason"] = "详情页无元数据字段"
+        return r
+    if name == "javdatabase" and not re.search(r"Release Date|Runtime|Studio", t3):
+        r["reason"] = "详情页无元数据字段（可能是壳页）"
         return r
     r["enabled"] = True
     if r["mode"] == "由能力校验决定":
