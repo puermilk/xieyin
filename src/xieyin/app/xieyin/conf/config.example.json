@@ -4,7 +4,11 @@
   "bind": "0.0.0.0",
   "media_root": "/vol1/1000/Media",
   "proxy": "",
-  "jav": {"via": "auto", "recursive": true, "engine": "race", "preflight_ttl": 600},
+  "jav": {"via": "auto", "recursive": true, "engine": "race", "preflight_ttl": 600,
+          "plot_zh": true, "translate_provider": "auto", "translate_model": "GLM-5.3-Flash",
+          "translate_api_base": "https://opencode.ai/zen/go/v1",
+          "translate_max_tokens": 1600, "translate_temperature": 0.7,
+          "copy_enabled": false, "copy_root": "", "actor_sync": false},
   "tmdb": {},
   "history_limit": 80
 }

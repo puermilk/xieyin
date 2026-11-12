@@ -35,7 +35,7 @@ class PTDetectTest(unittest.TestCase):
         self.assertTrue(a.is_pt_name("Movie.2024@GROUP-10bit.mkv"))
 
     def test_domain_prefix_not_pt(self):
-        self.assertFalse(a.is_pt_name("489155.com@ABC-123.mp4"))
+        self.assertFalse(a.is_pt_name("example.com@ABC-123.mp4"))
 
     def test_plain_not_pt(self):
         self.assertFalse(a.is_pt_name("ABC-123.mkv"))

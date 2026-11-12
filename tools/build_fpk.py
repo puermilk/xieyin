@@ -74,7 +74,8 @@ def render_manifest(text: str, version: str, platform: str, checksum: str) -> st
 
 def excluded(name: str) -> bool:
     base = os.path.basename(name)
-    return base in ("__pycache__", "data") or base.endswith(".pyc")
+    return (base in ("__pycache__", "data") or base.endswith(".pyc")
+            or base.endswith(".log") or base.endswith(".bak"))
 
 
 def is_exec(path: str) -> bool:

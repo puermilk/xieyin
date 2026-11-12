@@ -37,12 +37,15 @@
 
 | 功能 | 说明 | 数据源 |
 |---|---|---|
-| 番号 AV 刮削 | 从文件夹名解析番号，写 nfo、海报、fanart、thumb、演员与类别 | JavBus |
+| 番号 AV 刮削 | 从文件夹名解析番号，写 nfo、海报、fanart、thumb、演员与类别 | JavBus / javdb580 / javdatabase |
+| **中文翻译** | LLM 生成中文标题与简介，保留日文原名；支持现有 NFO 补译 | LLM |
+| **演员整理** | 中文名映射、复合名拆分、补头像、合并重名、回写 NFO | JavBus / DMM / AV-League |
+| **飞牛同步** | 把 NFO 的标题/简介/封面写进飞牛影视 | fnOS |
 | 电影刮削 | 从文件夹名/文件名解析片名与年份，匹配 TMDB；支持手动搜索词、TMDB ID | TMDB |
-| **自动刮削** | 定时扫描 / qBittorrent 联动，新增文件自动刮 | JavBus |
+| **自动刮削** | 定时扫描 / qBittorrent / 飞牛下载中心联动，新增文件自动刮 | JavBus |
 | **STRM 支持** | `.strm` 流指针当媒体文件刮削，清理永不删它 | — |
 | 媒体体检 | 统计视频 / nfo / 图片，校验 nfo XML | 本地文件 |
-| 共享清理 | 每个文件夹只保留最大视频；可选去域名前缀 | 本地文件 |
+| 安全整理 | 只删广告视频/网页垃圾/孤儿 sidecar；平铺目录不误删；跳过下载中目录 | 本地文件 |
 | 网络自检 | DoH / JavBus / TMDB / 图床 / ffprobe / 目录 / 代理 | — |
 
 - 网页里选目录、点按钮即可运行，不用 SSH
@@ -54,17 +57,19 @@
 
 ## 自动刮削：文件增加了就自动刮
 
-两个触发源，都在网页「自动刮削」卡片里开关：
+三个触发源，都在网页「自动刮削」卡片里开关：
 
 | 触发源 | 原理 | 适合 |
 |---|---|---|
 | **定时扫描** | 每 N 分钟扫媒体目录，找出「有视频但缺 nfo」的文件夹 | 通用兜底，不依赖任何下载器 |
 | **qBittorrent 联动** | 轮询下载完成事件，只刮刚下完的目录 | 精准，不会误刮下到一半的文件 |
+| **飞牛下载中心** | 读取飞牛下载任务，完成一个刮一个 | 全程在 fnOS 里管理下载 |
 
-两个保险（可配）：
+三个保险：
 
 - **稳定期**（默认 10 分钟）：文件 mtime 早于 N 分钟才刮，避免误刮正在下载的文件
-- **PT 保护**（网页可开关，默认避开）：`@GROUP` / `*.torrent` 目录跳过，不写任何文件
+- **下载中目录保护**：含 `.part` / `.!qB` / `.aria2` 的目录整目录跳过，不整理、不刮削
+- **`.part` 等待**：种子还没重命名成正式视频时先等待，不提前刮
 
 > 自动刮削同样遵守「只新增、不覆盖已有图片、不改视频文件名」。
 > qBittorrent 联动只刮「刚下载完成」的目录，已处理过的（按 hash + 完成时间）不会重复刮。
@@ -96,7 +101,7 @@
 
 - 扫描到 `xxx@GROUP`、`xxx@GROUP-10bit` 这类做种文件/目录，或目录里有 `*.torrent`
 - **直接中止，不改名、不删除**，任务状态显示「已阻止」
-- 只对 `489155.com@ABC-123.mp4` 这种**域名前缀**形式做去前缀
+- 只对 `example.com@ABC-123.mp4` 这种**域名前缀**形式做去前缀
 - `Movie.2024.1080p@GROUP.mkv` 会被识别为 PT 发布名，绝不改名
 - 默认只删除多余**视频**；nfo / 图片 / 字幕等附属文件保留
 - 只有手动关闭「PT 保护」并输入 `CLEAN` 才会清理 PT 目录——不建议
@@ -129,7 +134,7 @@
 然后：
 
 ```bash
-appcenter-cli install-fpk /path/to/xieyin-2.0.0-x86.fpk   # 或 -arm.fpk
+appcenter-cli install-fpk /path/to/xieyin-2.1.0-x86.fpk   # 或 -arm.fpk
 ```
 
 ### 方式二：应用中心手动安装
@@ -213,20 +218,20 @@ python3 tools/test_auto_watch.py
 python3 tools/test_media_ext.py
 
 # 打包：默认一次产出 x86 与 arm 两份（需要 python3 + tar/gzip）
-python3 tools/build_fpk.py 2.0.0
+python3 tools/build_fpk.py 2.1.0
 
 # 也可以只打一个架构
-python3 tools/build_fpk.py 2.0.0 --platform x86
-python3 tools/build_fpk.py 2.0.0 --platform arm
+python3 tools/build_fpk.py 2.1.0 --platform x86
+python3 tools/build_fpk.py 2.1.0 --platform arm
 ```
 
 产出：
 
 ```
-dist/xieyin-2.0.0-x86.fpk
-dist/xieyin-2.0.0-x86.fpk.sha256
-dist/xieyin-2.0.0-arm.fpk
-dist/xieyin-2.0.0-arm.fpk.sha256
+dist/xieyin-2.1.0-x86.fpk
+dist/xieyin-2.1.0-x86.fpk.sha256
+dist/xieyin-2.1.0-arm.fpk
+dist/xieyin-2.1.0-arm.fpk.sha256
 ```
 
 > app.tgz 多架构共用（代码里没有原生二进制），只有 manifest 的 `platform` 行不同。
@@ -235,7 +240,7 @@ dist/xieyin-2.0.0-arm.fpk.sha256
 
 ```bash
 python3 tools/make_icons.py
-python3 tools/build_fpk.py 2.0.0
+python3 tools/build_fpk.py 2.1.0
 ```
 
 ### 项目结构

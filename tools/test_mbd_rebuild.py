@@ -40,13 +40,13 @@ class SignTest(unittest.TestCase):
 class PayloadTest(unittest.TestCase):
     def test_fields_and_bool_include_adult(self):
         d = {"guid": "G", "name": "AV", "category": "Movie",
-             "dir_list": ["/vol2/1000/CCAV/"], "lan": "zh-CN",
+             "dir_list": ["/vol1/1000/Media/"], "lan": "zh-CN",
              "include_adult": 1, "prefer_local_nfo": 1,
              "last_update_time": 123, "sort_num": 9,
              "refresh_disabled": False, "posters": ["/a.webp"]}
         p = m._create_payload(d)
         self.assertEqual(p["name"], "AV")
-        self.assertEqual(p["dir_list"], ["/vol2/1000/CCAV/"])
+        self.assertEqual(p["dir_list"], ["/vol1/1000/Media/"])
         self.assertEqual(p["prefer_local_nfo"], 1)
         self.assertIs(p["include_adult"], True)      # 数字会 Internal Error
         self.assertNotIn("guid", p)
@@ -60,15 +60,15 @@ class PayloadTest(unittest.TestCase):
 
 class MatchTest(unittest.TestCase):
     def test_equal_and_child(self):
-        self.assertTrue(m._matches("/vol2/1000/CCAV", ["/vol2/1000/CCAV/"]))
-        self.assertTrue(m._matches("/vol2/1000/CCAV/sub", ["/vol2/1000/CCAV/"]))
+        self.assertTrue(m._matches("/vol1/1000/Media", ["/vol1/1000/Media/"]))
+        self.assertTrue(m._matches("/vol1/1000/Media/sub", ["/vol1/1000/Media/"]))
 
     def test_unrelated(self):
-        self.assertFalse(m._matches("/vol2/1000/OTHER", ["/vol2/1000/CCAV/"]))
+        self.assertFalse(m._matches("/vol2/1000/OTHER", ["/vol1/1000/Media/"]))
 
     def test_lib_inside_root_is_not_a_match(self):
         """库目录只是 root 的子目录时不能删整个库（防误伤）"""
-        self.assertFalse(m._matches("/vol2/1000", ["/vol2/1000/CCAV/"]))
+        self.assertFalse(m._matches("/vol2/1000", ["/vol1/1000/Media/"]))
 
 
 class FakeClient:
@@ -101,7 +101,7 @@ class FakeClient:
 
 
 LIB = {"guid": "OLDGUID", "name": "AV", "category": "Movie",
-       "dir_list": ["/vol2/1000/CCAV/"], "prefer_local_nfo": 1}
+       "dir_list": ["/vol1/1000/Media/"], "prefer_local_nfo": 1}
 CFG = dict(LIB, lan="zh-CN", include_adult=0, skip_filesize=0)
 
 
@@ -109,7 +109,7 @@ class RebuildFlowTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="xieyin-mbd-")
 
-    def _run(self, client, root="/vol2/1000/CCAV"):
+    def _run(self, client, root="/vol1/1000/Media"):
         with mock.patch.object(m, "_pick_client", return_value=client):
             return m.rebuild(root, data_dir=self.tmp)
 
@@ -160,14 +160,14 @@ class RebuildFlowTest(unittest.TestCase):
         c = FakeClient([LIB], CFG)
         with mock.patch.object(m, "_pick_client", return_value=c), \
              mock.patch.object(m, "_backup_path", side_effect=OSError("disk")):
-            ok, lines = m.rebuild("/vol2/1000/CCAV", data_dir=self.tmp)
+            ok, lines = m.rebuild("/vol1/1000/Media", data_dir=self.tmp)
         self.assertFalse(ok)
         self.assertNotIn("delete", [x[0] for x in c.calls])
         self.assertTrue(any("备份失败" in x for x in lines))
 
     def test_no_token_skips_safely(self):
         with mock.patch.object(m, "_pick_client", return_value=None):
-            ok, lines = m.rebuild("/vol2/1000/CCAV", data_dir=self.tmp)
+            ok, lines = m.rebuild("/vol1/1000/Media", data_dir=self.tmp)
         self.assertTrue(ok)
         self.assertTrue(any("跳过重建" in x for x in lines))
 

@@ -1,0 +1,5935 @@
+{
+  "version": "2026-11-12.1",
+  "terms": [
+    {
+      "ja": "マドンナ専属美熟女",
+      "zh": "Madonna专属美熟女",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "女神专属美熟女",
+        "麦当娜专属美熟女",
+        "专属女神熟女"
+      ]
+    },
+    {
+      "ja": "マッチングアプリ",
+      "zh": "交友软件",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "シングルマザー",
+      "zh": "单亲妈妈",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "アナルセックス",
+      "zh": "肛交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ビジネスホテル",
+      "zh": "商务酒店",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "種付けセックス",
+      "zh": "播种性爱",
+      "wrong": [
+        "播种SEX",
+        "种付性交",
+        "怀孕性爱"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "レースクイーン",
+      "zh": "赛车女郎",
+      "wrong": [
+        "蕾丝皇后",
+        "竞速女王",
+        "赛车皇后",
+        "蕾丝女王",
+        "赛车女王"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "イカされ続ける",
+      "zh": "被不断弄到高潮",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "持续调教",
+        "不断调教",
+        "持续征服",
+        "不断征服"
+      ]
+    },
+    {
+      "ja": "種付けプレス",
+      "zh": "按住播种内射",
+      "wrong": [
+        "种马般地压制着",
+        "种马般地压制",
+        "种马般地壓制",
+        "种马般地",
+        "种马般压制",
+        "种马般",
+        "种马",
+        "種馬般地压制",
+        "種付け",
+        "授精",
+        "种上",
+        "播种",
+        "播种压制"
+      ],
+      "re": "[种種]马[般地]*[压壓]制[着]?",
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "ピロートーク",
+      "zh": "枕边话",
+      "wrong": [
+        "枕头话"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ウェディング",
+      "zh": "婚纱",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ストッキング",
+      "zh": "丝袜",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ディープキス",
+      "zh": "深吻",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "相互オナニー",
+      "zh": "互相自慰",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "アナルプラグ",
+      "zh": "肛塞",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ボールギャグ",
+      "zh": "口球",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "アフターピル",
+      "zh": "紧急避孕药",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "種付けSEX",
+      "zh": "播种性爱",
+      "wrong": [
+        "播种SEX",
+        "种付SEX",
+        "怀孕性交",
+        "播种性交",
+        "怀孕性关系",
+        "怀孕性爱",
+        "播种性关系"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "アクセサリー",
+      "zh": "饰品",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "プライベート",
+      "zh": "私人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "コールガール",
+      "zh": "应召女郎",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "中出しされた",
+      "zh": "被内射",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "被儿子射",
+        "被射在里面",
+        "被射入",
+        "被内射精"
+      ]
+    },
+    {
+      "ja": "マドンナ専属",
+      "zh": "Madonna专属",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "女神专属",
+        "麦当娜专属",
+        "专属女神"
+      ]
+    },
+    {
+      "ja": "ドキュメント",
+      "zh": "纪录片",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "インタビュー",
+      "zh": "采访",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "コレクション",
+      "zh": "合集",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ソープランド",
+      "zh": "泡泡浴",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "肥皂乐园",
+        "肥皂场"
+      ]
+    },
+    {
+      "ja": "義理の息子",
+      "zh": "继子",
+      "wrong": [
+        "女婿",
+        "义子",
+        "繼子"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "お義父さん",
+      "zh": "公公",
+      "wrong": [
+        "岳父",
+        "继父",
+        "養父",
+        "养父",
+        "父亲",
+        "义父"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "お義母さん",
+      "zh": "继母",
+      "wrong": [
+        "婆婆",
+        "岳母",
+        "繼母",
+        "養母",
+        "养母"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "潮吹き絶頂",
+      "zh": "潮吹高潮",
+      "wrong": [
+        "潮吹绝顶",
+        "喷潮绝顶"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "イカされる",
+      "zh": "被弄到高潮",
+      "wrong": [
+        "被干到高潮",
+        "被搞到高潮",
+        "被弄高潮",
+        "征服",
+        "被征服",
+        "不断征服"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "オーガズム",
+      "zh": "高潮",
+      "wrong": [
+        "绝顶",
+        "性高潮"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "義理の家族",
+      "zh": "继亲家庭",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "スレンダー",
+      "zh": "苗条",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ぽっちゃり",
+      "zh": "微胖",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ハイヒール",
+      "zh": "高跟鞋",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ローション",
+      "zh": "润滑液",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "コンドーム",
+      "zh": "避孕套",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "生セックス",
+      "zh": "无套性爱",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "立ちバック",
+      "zh": "站立后入",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "突き上げる",
+      "zh": "顶弄",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "締め付ける",
+      "zh": "紧夹",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "後ろめたさ",
+      "zh": "愧疚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ラブホテル",
+      "zh": "爱情酒店",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "クリニック",
+      "zh": "诊所",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "鍵をかける",
+      "zh": "锁门",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "妊娠検査薬",
+      "zh": "验孕棒",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "キスマーク",
+      "zh": "吻痕",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "リミッター",
+      "zh": "限制器",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ストリップ",
+      "zh": "脱衣舞",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "母姦中出し",
+      "zh": "母子乱伦内射",
+      "must": true,
+      "soft": false,
+      "wrong": [
+        "母子相奸内射",
+        "母亲性交内射",
+        "母奸内射"
+      ]
+    },
+    {
+      "ja": "寝取られて",
+      "zh": "妻子被睡走",
+      "wrong": [
+        "NTR"
+      ],
+      "soft": false,
+      "must": false,
+      "prompt": "按主语自然表达（如「继子把妻子给睡了」），不要机械写 NTR"
+    },
+    {
+      "ja": "追姦レ×プ",
+      "zh": "连续侵犯",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "追奸强奸",
+        "追奸强暴",
+        "追踪奸淫",
+        "追奸"
+      ]
+    },
+    {
+      "ja": "追姦レイプ",
+      "zh": "连续侵犯",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "追奸强奸",
+        "追奸强暴",
+        "追踪奸淫",
+        "追奸"
+      ]
+    },
+    {
+      "ja": "嫁の義理娘",
+      "zh": "儿媳兼继女",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "儿媳的继女",
+        "媳妇的继女",
+        "儿媳的继女"
+      ]
+    },
+    {
+      "ja": "義理の母",
+      "zh": "继母",
+      "wrong": [
+        "婆婆",
+        "岳母",
+        "繼母",
+        "養母",
+        "养母"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "筆下ろし",
+      "zh": "破处",
+      "wrong": [
+        "开苞",
+        "初体验",
+        "开处",
+        "授课",
+        "教课"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "舐め回す",
+      "zh": "舔遍",
+      "wrong": [
+        "一直舔",
+        "舔舐",
+        "舐遍",
+        "舐",
+        "舔舔"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "寝取られ",
+      "zh": "NTR",
+      "wrong": [
+        "睡走",
+        "戴绿帽",
+        "绿帽",
+        "寝取",
+        "被绿"
+      ],
+      "soft": false,
+      "must": true,
+      "valid": [
+        "NTR",
+        "把妻子给睡了",
+        "把老婆给睡了",
+        "妻子被睡",
+        "老婆被睡",
+        "妻子被夺走",
+        "老婆被夺走",
+        "妻子被抢走",
+        "老婆被抢走",
+        "妻子被睡走",
+        "老婆被睡走",
+        "抢走妻子",
+        "夺走妻子",
+        "抢走老婆",
+        "夺走老婆",
+        "睡了",
+        "被睡了",
+        "妻子被睡了",
+        "老婆被睡了",
+        "妻子给睡了",
+        "老婆给睡了",
+        "夺走",
+        "抢走",
+        "被夺走",
+        "被抢走",
+        "被睡",
+        "给睡了",
+        "越过了那条线",
+        "越过那条线",
+        "跨过了那条线",
+        "越过了不该越过的线",
+        "越界",
+        "越过了界限",
+        "越过了底线"
+      ],
+      "prompt": "用留白、有张力的自然中文表达（如「继子与妻子，越过了那条线」），不要机械写 NTR，也不要过于直白"
+    },
+    {
+      "ja": "絶頂寸前",
+      "zh": "高潮前夕",
+      "wrong": [
+        "绝顶前夕",
+        "高潮前",
+        "快要绝顶"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "連続絶頂",
+      "zh": "连续高潮",
+      "wrong": [
+        "连续绝顶",
+        "连续到顶"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "痙攣絶頂",
+      "zh": "痉挛高潮",
+      "wrong": [
+        "痉挛绝顶",
+        "抽搐高潮"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "イカせる",
+      "zh": "弄到高潮",
+      "wrong": [
+        "让人绝顶",
+        "使人绝顶"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "快楽堕ち",
+      "zh": "沉溺快感",
+      "wrong": [
+        "快乐堕落",
+        "堕落快感"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "生中出し",
+      "zh": "无套内射",
+      "wrong": [
+        "生中出",
+        "无套性交",
+        "生插中出",
+        "无套内射中出"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "近親相姦",
+      "zh": "近亲乱伦",
+      "wrong": [
+        "近亲相奸",
+        "乱伦相奸"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "義理の父",
+      "zh": "公公",
+      "wrong": [
+        "岳父",
+        "继父",
+        "养父",
+        "養父",
+        "义父"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "義理の娘",
+      "zh": "继女",
+      "wrong": [
+        "儿媳",
+        "义女"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "浮気相手",
+      "zh": "出轨对象",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "不倫相手",
+      "zh": "不伦对象",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "バツイチ",
+      "zh": "离异",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "家庭教師",
+      "zh": "家庭教师",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "母子相姦",
+      "zh": "母子乱伦",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "父娘相姦",
+      "zh": "父女乱伦",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "兄妹相姦",
+      "zh": "兄妹乱伦",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "姉弟相姦",
+      "zh": "姐弟乱伦",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "隠し撮り",
+      "zh": "偷拍",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "スカトロ",
+      "zh": "屎尿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "エプロン",
+      "zh": "围裙",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "パンスト",
+      "zh": "连裤袜",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ニーハイ",
+      "zh": "过膝袜",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "コスプレ",
+      "zh": "角色扮演",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "女子校生",
+      "zh": "女学生",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "膣内射精",
+      "zh": "内射",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "子宮射精",
+      "zh": "子宫射精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "口内射精",
+      "zh": "口内射精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "喉奥射精",
+      "zh": "喉深射精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ぶっかけ",
+      "zh": "浇射",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ゴックン",
+      "zh": "吞精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "パイズリ",
+      "zh": "乳交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "貝合わせ",
+      "zh": "贝合",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "しゃぶる",
+      "zh": "吮吸",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "濃厚接吻",
+      "zh": "浓密接吻",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "オナニー",
+      "zh": "自慰",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ローター",
+      "zh": "跳蛋",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ディルド",
+      "zh": "假阳具",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "生フェラ",
+      "zh": "无套口交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "寝バック",
+      "zh": "侧躺后入",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "背面座位",
+      "zh": "背面坐位",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "フィスト",
+      "zh": "拳交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ピストン",
+      "zh": "抽送",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "抜き差し",
+      "zh": "抽插",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "吸い付く",
+      "zh": "吸附",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "絡み合う",
+      "zh": "交缠",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "意識飛ぶ",
+      "zh": "意识飞走",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "孕ませる",
+      "zh": "搞大肚子",
+      "wrong": [
+        "弄怀孕",
+        "搞怀孕",
+        "干怀孕",
+        "让怀孕"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ザーメン",
+      "zh": "精液",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "デカチン",
+      "zh": "大鸡巴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "おっぱい",
+      "zh": "胸部",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "キッチン",
+      "zh": "厨房",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "リビング",
+      "zh": "客厅",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "オフィス",
+      "zh": "办公室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "二泊三日",
+      "zh": "三天两晚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "初デート",
+      "zh": "初次约会",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "新婚旅行",
+      "zh": "蜜月旅行",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "二人きり",
+      "zh": "两人独处",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "不妊治療",
+      "zh": "不孕治疗",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "産婦人科",
+      "zh": "妇产科",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "マラ喰い",
+      "zh": "口交",
+      "wrong": [
+        "马拉吸食",
+        "马拉吞食",
+        "马拉吃",
+        "口爆",
+        "口射"
+      ],
+      "must": false,
+      "soft": false,
+      "re": "马拉[吞吸吃][食噬]?"
+    },
+    {
+      "ja": "ハイレグ",
+      "zh": "高叉",
+      "wrong": [
+        "高开叉",
+        "高叉泳装"
+      ],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "マドンナ",
+      "zh": "Madonna",
+      "wrong": [
+        "麦当娜",
+        "玛丹娜",
+        "女神",
+        "麦丹娜"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "お母さん",
+      "zh": "妈妈",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "お仕置き",
+      "zh": "惩罚",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "アダルト",
+      "zh": "成人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "昼下がり",
+      "zh": "午后",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "シーズン",
+      "zh": "季",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ドライブ",
+      "zh": "兜风",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "剥き出し",
+      "zh": "裸露",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ピンサロ",
+      "zh": "粉红沙龙",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "身代わり",
+      "zh": "替身",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "言いなり",
+      "zh": "顺从",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "カノジョ",
+      "zh": "女友",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "サービス",
+      "zh": "服务",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ヌルルン",
+      "zh": "努鲁伦",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "完全着衣",
+      "zh": "衣着完整",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "全衣服",
+        "完全穿衣",
+        "全着装",
+        "完全着装"
+      ]
+    },
+    {
+      "ja": "初中出し",
+      "zh": "初次内射",
+      "soft": false,
+      "must": true,
+      "wrong": [
+        "第一次 内射",
+        "初次 内射",
+        "第一次内射"
+      ]
+    },
+    {
+      "ja": "絶頂調教",
+      "zh": "高潮调教",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "极致调教",
+        "绝顶调教",
+        "高潮训练"
+      ]
+    },
+    {
+      "ja": "素泊まり",
+      "zh": "仅住宿",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "素宿",
+        "只住宿",
+        "不含餐住宿"
+      ]
+    },
+    {
+      "ja": "セールス",
+      "zh": "销售",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "密着取材",
+      "zh": "贴身采访",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "専属契約",
+      "zh": "专属合约",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "監督作品",
+      "zh": "导演作品",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "シリーズ",
+      "zh": "系列",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "映像特典",
+      "zh": "影像特典",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "寝取った",
+      "zh": "睡走",
+      "wrong": [
+        "NTR"
+      ],
+      "soft": false,
+      "must": false,
+      "prompt": "按主语自然表达（如「继子把妻子给睡了」），不要机械写 NTR"
+    },
+    {
+      "ja": "雑魚淫語",
+      "zh": "低俗淫语",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "杂鱼淫语",
+        "雑魚淫語",
+        "杂鱼淫语责弄"
+      ]
+    },
+    {
+      "ja": "中出し",
+      "zh": "内射",
+      "wrong": [
+        "中出",
+        "射在里面",
+        "射了里面",
+        "内射精",
+        "内部射精",
+        "被射入",
+        "射入",
+        "被儿子射"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "犯され",
+      "zh": "侵犯",
+      "wrong": [
+        "强奸",
+        "强暴",
+        "被干"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "潮吹き",
+      "zh": "潮吹",
+      "wrong": [
+        "喷潮",
+        "潮喷",
+        "喷水"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "アクメ",
+      "zh": "高潮",
+      "wrong": [
+        "绝顶",
+        "顶点"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "寸止め",
+      "zh": "寸止",
+      "wrong": [
+        "停止",
+        "忍住",
+        "停住"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "焦らし",
+      "zh": "挑逗",
+      "wrong": [
+        "着急",
+        "焦躁",
+        "焦急"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "抜かず",
+      "zh": "不拔出",
+      "wrong": [
+        "不拔",
+        "没有拔出"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "未亡人",
+      "zh": "寡妇",
+      "wrong": [
+        "未亡人",
+        "遗孀"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "生ハメ",
+      "zh": "无套插入",
+      "wrong": [
+        "生插",
+        "无套性交",
+        "无套性爱"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "危険日",
+      "zh": "危险期",
+      "wrong": [
+        "危险日"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "孕ませ",
+      "zh": "搞大肚子",
+      "wrong": [
+        "弄怀孕",
+        "搞怀孕",
+        "干怀孕",
+        "让怀孕"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "種付け",
+      "zh": "播种",
+      "wrong": [
+        "配种",
+        "种付",
+        "播种压制"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "寝取り",
+      "zh": "睡走",
+      "wrong": [
+        "NTR",
+        "睡走他人",
+        "睡别人老婆"
+      ],
+      "soft": false,
+      "must": true,
+      "valid": [
+        "NTR",
+        "把妻子给睡了",
+        "把老婆给睡了",
+        "妻子被睡",
+        "老婆被睡",
+        "妻子被夺走",
+        "老婆被夺走",
+        "妻子被抢走",
+        "老婆被抢走",
+        "妻子被睡走",
+        "老婆被睡走",
+        "抢走妻子",
+        "夺走妻子",
+        "抢走老婆",
+        "夺走老婆",
+        "越过了那条线",
+        "越过那条线",
+        "跨过了那条线",
+        "越过了不该越过的线",
+        "越界",
+        "越过了界限",
+        "越过了底线"
+      ],
+      "prompt": "用留白、有张力的自然中文表达（如「继子与妻子，越过了那条线」），不要机械写 NTR，也不要过于直白"
+    },
+    {
+      "ja": "従兄弟",
+      "zh": "堂表兄弟",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "奥さん",
+      "zh": "太太",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "若奥様",
+      "zh": "年轻太太",
+      "wrong": [
+        "少奶奶"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "元カレ",
+      "zh": "前男友",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "元カノ",
+      "zh": "前女友",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "婚約者",
+      "zh": "未婚夫/妻",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "女教師",
+      "zh": "女教师",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "女上司",
+      "zh": "女上司",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "看護師",
+      "zh": "护士",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "家政婦",
+      "zh": "家政妇",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "メイド",
+      "zh": "女仆",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "受付嬢",
+      "zh": "前台",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "既婚者",
+      "zh": "已婚者",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "連れ子",
+      "zh": "继子",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "NTR",
+      "zh": "NTR",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "同性愛",
+      "zh": "同性爱",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "のぞき",
+      "zh": "偷窥",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ペット",
+      "zh": "宠物",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ショタ",
+      "zh": "正太",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "美熟女",
+      "zh": "美熟女",
+      "wrong": [
+        "美丽成熟女性",
+        "美女熟女",
+        "成熟美女",
+        "美熟妇"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "美魔女",
+      "zh": "美魔女",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "四十路",
+      "zh": "四十路",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "五十路",
+      "zh": "五十路",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "素人娘",
+      "zh": "素人女孩",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "高身長",
+      "zh": "高个子",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "低身長",
+      "zh": "娇小",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "パンツ",
+      "zh": "内裤",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ナース",
+      "zh": "护士服",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "大学生",
+      "zh": "大学生",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "会社員",
+      "zh": "公司职员",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "お嬢様",
+      "zh": "大小姐",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "奥射精",
+      "zh": "深处射精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "外出し",
+      "zh": "外射",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "手コキ",
+      "zh": "手交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "フェラ",
+      "zh": "口交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "腿コキ",
+      "zh": "腿交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "足コキ",
+      "zh": "足交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "腋コキ",
+      "zh": "腋交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "髪コキ",
+      "zh": "发交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "尻コキ",
+      "zh": "臀交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "クンニ",
+      "zh": "舔阴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "舐める",
+      "zh": "舔",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "オナホ",
+      "zh": "飞机杯",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "バイブ",
+      "zh": "振动棒",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "生挿入",
+      "zh": "无套插入",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "騎乗位",
+      "zh": "骑乘位",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "正常位",
+      "zh": "正常位",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "バック",
+      "zh": "后入",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "屈曲位",
+      "zh": "屈曲位",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "アナル",
+      "zh": "肛",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "イッた",
+      "zh": "去了",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "イキ顔",
+      "zh": "高潮脸",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "イキ声",
+      "zh": "娇喘",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "溺れる",
+      "zh": "沉溺",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "堕ちる",
+      "zh": "堕落",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "背徳感",
+      "zh": "背德感",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "罪悪感",
+      "zh": "罪恶感",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "子宮口",
+      "zh": "子宫口",
+      "wrong": [
+        "子宫颈口"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ペニス",
+      "zh": "阴茎",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "チンポ",
+      "zh": "鸡巴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "チ○ポ",
+      "zh": "鸡巴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "前立腺",
+      "zh": "前列腺",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "太もも",
+      "zh": "大腿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "うなじ",
+      "zh": "后颈",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "よだれ",
+      "zh": "口水",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ホテル",
+      "zh": "酒店",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "トイレ",
+      "zh": "厕所",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ベッド",
+      "zh": "床",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ソファ",
+      "zh": "沙发",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "会議室",
+      "zh": "会议室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "事務所",
+      "zh": "事务所",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "保健室",
+      "zh": "医务室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "体育館",
+      "zh": "体育馆",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "診察室",
+      "zh": "诊室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "手術室",
+      "zh": "手术室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "エステ",
+      "zh": "美容院",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "サロン",
+      "zh": "沙龙",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "プール",
+      "zh": "泳池",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "リード",
+      "zh": "牵引绳",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "目隠し",
+      "zh": "眼罩",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "3時間",
+      "zh": "3小时",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "10秒",
+      "zh": "10秒",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "同窓会",
+      "zh": "同学会",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "飲み会",
+      "zh": "酒会",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "合コン",
+      "zh": "联谊",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "デート",
+      "zh": "约会",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "安全日",
+      "zh": "安全期",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "排卵日",
+      "zh": "排卵日",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "生理中",
+      "zh": "经期",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "避妊具",
+      "zh": "避孕具",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "セレブ",
+      "zh": "名流",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "汗だく",
+      "zh": "大汗淋漓",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "幼馴染",
+      "zh": "青梅竹马",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ダーツ",
+      "zh": "飞镖",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "オヤジ",
+      "zh": "大叔",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "相部屋",
+      "zh": "同房",
+      "wrong": [
+        "相房",
+        "同住一间",
+        "合住"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "倦怠期",
+      "zh": "倦怠期",
+      "wrong": [
+        "低潮时",
+        "倦怠期低潮",
+        "冷淡期"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "ナンパ",
+      "zh": "搭讪",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "セフレ",
+      "zh": "炮友",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "火遊び",
+      "zh": "玩火",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "痴魔女",
+      "zh": "痴魔女",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "受験生",
+      "zh": "考生",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "初体験",
+      "zh": "初体验",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "濡れ場",
+      "zh": "床戏",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "シーツ",
+      "zh": "床单",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "寝間着",
+      "zh": "睡衣",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "部屋着",
+      "zh": "家居服",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "雑魚寝",
+      "zh": "挤睡",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "スロー",
+      "zh": "缓慢",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "放課後",
+      "zh": "放学后",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ボディ",
+      "zh": "身体",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ノック",
+      "zh": "敲门",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "生殺し",
+      "zh": "吊着",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "贈り物",
+      "zh": "礼物",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "お願い",
+      "zh": "请求",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ルール",
+      "zh": "规则",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "春休み",
+      "zh": "春假",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "乳離れ",
+      "zh": "断奶",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "モード",
+      "zh": "模式",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "暴風雨",
+      "zh": "暴风雨",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "召使い",
+      "zh": "仆人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ビジホ",
+      "zh": "商务酒店",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "独り身",
+      "zh": "单身",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ルーム",
+      "zh": "房间",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ヌード",
+      "zh": "裸体",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "モデル",
+      "zh": "模特",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "アナタ",
+      "zh": "你",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "スカイ",
+      "zh": "天空",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ブルー",
+      "zh": "蓝色",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "レディ",
+      "zh": "女士",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "グッズ",
+      "zh": "周边",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "イジメ",
+      "zh": "欺凌",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "同級生",
+      "zh": "同学",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "外回り",
+      "zh": "外勤",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "雨宿り",
+      "zh": "避雨",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "表舞台",
+      "zh": "台前",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "裏舞台",
+      "zh": "幕后",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ベスト",
+      "zh": "精选",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "総集編",
+      "zh": "总集篇",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "完全版",
+      "zh": "完整版",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "未公開",
+      "zh": "未公开",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "完結編",
+      "zh": "完结篇",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "最新作",
+      "zh": "最新作",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "話題作",
+      "zh": "话题作",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "人気作",
+      "zh": "人气作",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "寝取る",
+      "zh": "睡走",
+      "wrong": [
+        "NTR"
+      ],
+      "soft": false,
+      "must": false,
+      "prompt": "按主语自然表达（如「继子把妻子给睡了」），不要机械写 NTR"
+    },
+    {
+      "ja": "レイプ",
+      "zh": "侵犯",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "强奸",
+        "强暴",
+        "强姦"
+      ]
+    },
+    {
+      "ja": "レ×プ",
+      "zh": "侵犯",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "强奸",
+        "强暴",
+        "强姦"
+      ]
+    },
+    {
+      "ja": "義理娘",
+      "zh": "继女",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "义理娘",
+        "继女"
+      ]
+    },
+    {
+      "ja": "ソープ",
+      "zh": "泡泡浴",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "肥皂场",
+        "肥皂浴",
+        "洗浴"
+      ]
+    },
+    {
+      "ja": "耳舐め",
+      "zh": "舔耳",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "舔耳朵",
+        "耳舔"
+      ]
+    },
+    {
+      "ja": "杭打ち",
+      "zh": "打桩",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "杭打",
+        "打桩式"
+      ]
+    },
+    {
+      "ja": "義父",
+      "zh": "公公",
+      "wrong": [
+        "岳父",
+        "继父",
+        "繼父",
+        "养父",
+        "父亲",
+        "寄父",
+        "义父",
+        "養父"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "親父",
+      "zh": "亲爹",
+      "wrong": [
+        "父亲",
+        "老爸",
+        "老爹"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "義母",
+      "zh": "继母",
+      "wrong": [
+        "婆婆",
+        "岳母",
+        "繼母",
+        "養母",
+        "养母"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "人妻",
+      "zh": "人妻",
+      "wrong": [
+        "已婚妇女",
+        "已婚女性",
+        "人妇",
+        "妻子",
+        "已婚女人",
+        "有夫之妇"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "童貞",
+      "zh": "童贞",
+      "wrong": [
+        "处女",
+        "处男"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "犯す",
+      "zh": "侵犯",
+      "wrong": [
+        "强奸",
+        "强暴",
+        "干"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "絶頂",
+      "zh": "高潮",
+      "wrong": [
+        "绝顶",
+        "绝顶了",
+        "绝顶高潮",
+        "到顶",
+        "顶点",
+        "高潮了"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "イク",
+      "zh": "去了",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "痙攣",
+      "zh": "痉挛",
+      "wrong": [
+        "抽搐"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "絶倫",
+      "zh": "精力绝伦",
+      "wrong": [
+        "无与伦比",
+        "绝伦",
+        "性欲强",
+        "性能力超群",
+        "性能力很强",
+        "性欲超群",
+        "精力旺盛"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "追撃",
+      "zh": "连续追击",
+      "wrong": [
+        "追击",
+        "追赶"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "事後",
+      "zh": "事后",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "余韻",
+      "zh": "余韵",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "痴漢",
+      "zh": "痴汉",
+      "wrong": [
+        "色狼",
+        "猥亵男",
+        "摸猥"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "調教",
+      "zh": "调教",
+      "wrong": [
+        "训练",
+        "驯服"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "奴隷",
+      "zh": "奴隶",
+      "wrong": [
+        "奴仆"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "緊縛",
+      "zh": "紧缚",
+      "wrong": [
+        "捆绑",
+        "绑缚"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "妊娠",
+      "zh": "怀孕",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "淫語",
+      "zh": "淫语",
+      "wrong": [
+        "脏话"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "猥褻",
+      "zh": "猥亵",
+      "wrong": [
+        "猥琐"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "浮気",
+      "zh": "出轨",
+      "wrong": [
+        "偷情",
+        "劈腿"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "不倫",
+      "zh": "不伦",
+      "wrong": [
+        "出轨",
+        "婚外情"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "実父",
+      "zh": "亲爹",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "実母",
+      "zh": "亲妈",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "息子",
+      "zh": "儿子",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "家族",
+      "zh": "家人",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "上司",
+      "zh": "上司",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "部下",
+      "zh": "部下",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "同僚",
+      "zh": "同事",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "後輩",
+      "zh": "后辈",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "先輩",
+      "zh": "前辈",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "先生",
+      "zh": "老师",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "生徒",
+      "zh": "学生",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "叔父",
+      "zh": "叔叔",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "叔母",
+      "zh": "阿姨",
+      "wrong": [
+        "姑妈",
+        "姨妈",
+        "婶婶"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "伯父",
+      "zh": "伯父",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "伯母",
+      "zh": "伯母",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "旦那",
+      "zh": "老公",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "奥様",
+      "zh": "夫人",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "恋人",
+      "zh": "恋人",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "愛人",
+      "zh": "情人",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "本妻",
+      "zh": "正妻",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "若妻",
+      "zh": "年轻妻子",
+      "wrong": [
+        "少妇"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "寡婦",
+      "zh": "寡妇",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "医者",
+      "zh": "医生",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "OL",
+      "zh": "OL",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "隣人",
+      "zh": "邻居",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "大家",
+      "zh": "房东",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "親友",
+      "zh": "好友",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "親戚",
+      "zh": "亲戚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "夫婦",
+      "zh": "夫妇",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "新婚",
+      "zh": "新婚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "独身",
+      "zh": "单身",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "再婚",
+      "zh": "再婚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "密会",
+      "zh": "密会",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "不貞",
+      "zh": "不贞",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "背徳",
+      "zh": "背德",
+      "wrong": [
+        "不道德"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "禁断",
+      "zh": "禁断",
+      "wrong": [
+        "禁忌"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "レズ",
+      "zh": "女同",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "百合",
+      "zh": "百合",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "乱交",
+      "zh": "乱交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "輪姦",
+      "zh": "轮奸",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "3P",
+      "zh": "3P",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "4P",
+      "zh": "4P",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "集団",
+      "zh": "集体",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "痴女",
+      "zh": "痴女",
+      "wrong": [
+        "荡妇",
+        "淫妇",
+        "骚货"
+      ],
+      "soft": false,
+      "must": true
+    },
+    {
+      "ja": "露出",
+      "zh": "露出",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "野外",
+      "zh": "野外",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "青姦",
+      "zh": "野战",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "盗撮",
+      "zh": "偷拍",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "監禁",
+      "zh": "监禁",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "誘拐",
+      "zh": "诱拐",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "催眠",
+      "zh": "催眠",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "洗脳",
+      "zh": "洗脑",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "SM",
+      "zh": "SM",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "拘束",
+      "zh": "拘束",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "拷問",
+      "zh": "拷问",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "獣姦",
+      "zh": "兽交",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "放尿",
+      "zh": "放尿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "飲尿",
+      "zh": "饮尿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ロリ",
+      "zh": "萝莉",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "熟女",
+      "zh": "熟女",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "完熟",
+      "zh": "完熟",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "還暦",
+      "zh": "花甲",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "素人",
+      "zh": "素人",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "巨乳",
+      "zh": "巨乳",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "爆乳",
+      "zh": "爆乳",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "貧乳",
+      "zh": "贫乳",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "美脚",
+      "zh": "美腿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "美臀",
+      "zh": "美臀",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "美乳",
+      "zh": "美乳",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "美尻",
+      "zh": "美臀",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "巨尻",
+      "zh": "巨臀",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "色白",
+      "zh": "白皙",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "美白",
+      "zh": "美白",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "眼鏡",
+      "zh": "眼镜",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "制服",
+      "zh": "制服",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "水着",
+      "zh": "泳装",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "浴衣",
+      "zh": "浴衣",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "着物",
+      "zh": "和服",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "喪服",
+      "zh": "丧服",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "下着",
+      "zh": "内衣",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ブラ",
+      "zh": "胸罩",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "JK",
+      "zh": "JK",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "主婦",
+      "zh": "主妇",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "令嬢",
+      "zh": "千金",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "顔射",
+      "zh": "颜射",
+      "wrong": [
+        "脸射",
+        "面部射精",
+        "颜射精"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "胸射",
+      "zh": "胸射",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "腹射",
+      "zh": "腹射",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "尻射",
+      "zh": "臀射",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "足射",
+      "zh": "腿射",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "精飲",
+      "zh": "饮精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "飲精",
+      "zh": "饮精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "素股",
+      "zh": "素股",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "キス",
+      "zh": "吻",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "電マ",
+      "zh": "电动按摩器",
+      "wrong": [
+        "按摩棒",
+        "电动棒",
+        "振动棒"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "側位",
+      "zh": "侧位",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "座位",
+      "zh": "坐位",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "駅弁",
+      "zh": "站抱",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "69",
+      "zh": "69",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "二穴",
+      "zh": "二穴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "三穴",
+      "zh": "三穴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "浣腸",
+      "zh": "灌肠",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "拡張",
+      "zh": "扩张",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "突く",
+      "zh": "顶",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "密着",
+      "zh": "紧贴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "失神",
+      "zh": "昏过去",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "気絶",
+      "zh": "晕过去",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "放心",
+      "zh": "失神",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "喘ぎ",
+      "zh": "喘息",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "嬌声",
+      "zh": "娇声",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "快感",
+      "zh": "快感",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "悦び",
+      "zh": "愉悦",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "恍惚",
+      "zh": "恍惚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "陶酔",
+      "zh": "陶醉",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "覚醒",
+      "zh": "觉醒",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "開発",
+      "zh": "开发",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "屈辱",
+      "zh": "屈辱",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "羞恥",
+      "zh": "羞耻",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "膣内",
+      "zh": "阴道内",
+      "wrong": [
+        "膣内",
+        "阴道里面",
+        "体内射精"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "膣壁",
+      "zh": "阴道壁",
+      "wrong": [
+        "膣壁"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "膣口",
+      "zh": "阴道口",
+      "wrong": [
+        "膣口"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "子宮",
+      "zh": "子宫",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "卵巣",
+      "zh": "卵巢",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "卵管",
+      "zh": "输卵管",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "排卵",
+      "zh": "排卵",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "卵子",
+      "zh": "卵子",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "受精",
+      "zh": "受精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "着床",
+      "zh": "着床",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "孕む",
+      "zh": "怀孕",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "射精",
+      "zh": "射精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "発射",
+      "zh": "射精",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "精液",
+      "zh": "精液",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "精子",
+      "zh": "精子",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "精巣",
+      "zh": "睾丸",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "睾丸",
+      "zh": "睾丸",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "玉袋",
+      "zh": "阴囊",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "陰茎",
+      "zh": "阴茎",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "マラ",
+      "zh": "鸡巴",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "肉棒",
+      "zh": "肉棒",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "巨根",
+      "zh": "巨根",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "包茎",
+      "zh": "包茎",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "包皮",
+      "zh": "包皮",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "亀頭",
+      "zh": "龟头",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "カリ",
+      "zh": "龟头",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "裏筋",
+      "zh": "系带",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "尿道",
+      "zh": "尿道",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "乳首",
+      "zh": "乳头",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "乳輪",
+      "zh": "乳晕",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "谷間",
+      "zh": "乳沟",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "首筋",
+      "zh": "脖颈",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "鎖骨",
+      "zh": "锁骨",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "背中",
+      "zh": "背",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "へそ",
+      "zh": "肚脐",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "愛液",
+      "zh": "爱液",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "濡れ",
+      "zh": "湿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "唾液",
+      "zh": "唾液",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "温泉",
+      "zh": "温泉",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "旅館",
+      "zh": "旅馆",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "車内",
+      "zh": "车内",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "公園",
+      "zh": "公园",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "風呂",
+      "zh": "浴室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "寝室",
+      "zh": "卧室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "教室",
+      "zh": "教室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "屋上",
+      "zh": "天台",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "病院",
+      "zh": "医院",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "病室",
+      "zh": "病房",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ジム",
+      "zh": "健身房",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "海辺",
+      "zh": "海边",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "砂浜",
+      "zh": "沙滩",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "首輪",
+      "zh": "项圈",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "手錠",
+      "zh": "手铐",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "蝋燭",
+      "zh": "蜡",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ムチ",
+      "zh": "鞭",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "一晩",
+      "zh": "一晚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "一泊",
+      "zh": "一晚住宿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "出張",
+      "zh": "出差",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "旅行",
+      "zh": "旅行",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "帰省",
+      "zh": "回乡",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "告白",
+      "zh": "告白",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "交際",
+      "zh": "交往",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "婚約",
+      "zh": "订婚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "結婚",
+      "zh": "结婚",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "密室",
+      "zh": "密室",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "個室",
+      "zh": "单间",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "妊活",
+      "zh": "备孕",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "不妊",
+      "zh": "不孕",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "生理",
+      "zh": "月经",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "避妊",
+      "zh": "避孕",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "ピル",
+      "zh": "避孕药",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "専属",
+      "zh": "专属",
+      "wrong": [
+        "独家",
+        "专属的"
+      ],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "性交",
+      "zh": "性交",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "母親",
+      "zh": "母亲",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "好き",
+      "zh": "喜欢",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "彼女",
+      "zh": "她",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "勃起",
+      "zh": "勃起",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "日間",
+      "zh": "天",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "田舎",
+      "zh": "乡下",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "性欲",
+      "zh": "性欲",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "相性",
+      "zh": "契合度",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "美人",
+      "zh": "美人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "友人",
+      "zh": "朋友",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "誘惑",
+      "zh": "诱惑",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "最愛",
+      "zh": "最爱",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "勝手",
+      "zh": "擅自",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "淫乱",
+      "zh": "淫乱",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "生活",
+      "zh": "生活",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "抜群",
+      "zh": "绝佳",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "肉体",
+      "zh": "肉体",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "年間",
+      "zh": "年",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "年下",
+      "zh": "年下",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "社長",
+      "zh": "社长",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "交尾",
+      "zh": "交配",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ボク",
+      "zh": "我",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "大人",
+      "zh": "大人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "友達",
+      "zh": "朋友",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "高級",
+      "zh": "高级",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "一夜",
+      "zh": "一夜",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "毎日",
+      "zh": "每天",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "防備",
+      "zh": "防备",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "完全",
+      "zh": "完全",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "夫人",
+      "zh": "夫人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "毎晩",
+      "zh": "每晚",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "全て",
+      "zh": "全部",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "興奮",
+      "zh": "兴奋",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "上京",
+      "zh": "来东京",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "溺愛",
+      "zh": "溺爱",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "淫ら",
+      "zh": "淫荡",
+      "wrong": [
+        "淫秽",
+        "下流",
+        "猥琐",
+        "淫乱"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "欲望",
+      "zh": "欲望",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "濃密",
+      "zh": "浓密",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "記録",
+      "zh": "记录",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ダメ",
+      "zh": "不行",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "管理",
+      "zh": "管理",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "便器",
+      "zh": "便器",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "屋根",
+      "zh": "屋顶",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "欲情",
+      "zh": "欲情",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "制御",
+      "zh": "控制",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "不能",
+      "zh": "不能",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "地方",
+      "zh": "地方",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "衝撃",
+      "zh": "冲击",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "映像",
+      "zh": "影像",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "日々",
+      "zh": "日日",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "欲求",
+      "zh": "欲求",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "不満",
+      "zh": "不满",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "旺盛",
+      "zh": "旺盛",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "義姉",
+      "zh": "嫂子",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "実写",
+      "zh": "真人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "約束",
+      "zh": "约定",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "内緒",
+      "zh": "秘密",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "同居",
+      "zh": "同居",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "夢中",
+      "zh": "沉迷",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ベロ",
+      "zh": "舌头",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "フル",
+      "zh": "全",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "絶対",
+      "zh": "绝对",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "人生",
+      "zh": "人生",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "入浴",
+      "zh": "洗澡",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "大乱",
+      "zh": "大乱",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "客人",
+      "zh": "客人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "教育",
+      "zh": "教育",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "指導",
+      "zh": "指导",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "関係",
+      "zh": "关系",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "不埒",
+      "zh": "不端",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "情事",
+      "zh": "情事",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "魅力",
+      "zh": "魅力",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "着衣",
+      "zh": "穿衣",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "光沢",
+      "zh": "光泽",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "送迎",
+      "zh": "接送",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "詐欺",
+      "zh": "诈骗",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "入社",
+      "zh": "入职",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "研修",
+      "zh": "研修",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "異常",
+      "zh": "异常",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "肉欲",
+      "zh": "肉欲",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "秘密",
+      "zh": "秘密",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "無知",
+      "zh": "无知",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "彼氏",
+      "zh": "男友",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "舌先",
+      "zh": "舌尖",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "地元",
+      "zh": "本地",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "思い",
+      "zh": "想法",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "吐息",
+      "zh": "气息",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "視線",
+      "zh": "视线",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "体温",
+      "zh": "体温",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "鼓動",
+      "zh": "心跳",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "匂い",
+      "zh": "气味",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "香り",
+      "zh": "香气",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "指先",
+      "zh": "指尖",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "愛撫",
+      "zh": "爱抚",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "前戯",
+      "zh": "前戏",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "後戯",
+      "zh": "后戏",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "情婦",
+      "zh": "情妇",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "初夜",
+      "zh": "初夜",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "経験",
+      "zh": "经验",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "回数",
+      "zh": "次数",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "時間",
+      "zh": "时间",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "分泌",
+      "zh": "分泌",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "私服",
+      "zh": "便服",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "全裸",
+      "zh": "全裸",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "半裸",
+      "zh": "半裸",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "素肌",
+      "zh": "肌肤",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "素足",
+      "zh": "赤脚",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "足裏",
+      "zh": "脚底",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "太腿",
+      "zh": "大腿",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "乳房",
+      "zh": "乳房",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "電車",
+      "zh": "电车",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "通勤",
+      "zh": "通勤",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "耳元",
+      "zh": "耳边",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "囁き",
+      "zh": "低语",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "助け",
+      "zh": "求助",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "休憩",
+      "zh": "休息",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "通い",
+      "zh": "往返",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "週末",
+      "zh": "周末",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "極悪",
+      "zh": "极恶",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "服従",
+      "zh": "服从",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "校内",
+      "zh": "校内",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "聖職",
+      "zh": "圣职",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "復讐",
+      "zh": "复仇",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "球児",
+      "zh": "棒球少年",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "恨み",
+      "zh": "怨恨",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "監督",
+      "zh": "导演",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "激情",
+      "zh": "激情",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "卒業",
+      "zh": "毕业",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "色気",
+      "zh": "色气",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "門出",
+      "zh": "启程",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "我慢",
+      "zh": "忍耐",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ナマ",
+      "zh": "生",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "押し",
+      "zh": "推",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ゴム",
+      "zh": "避孕套",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "交換",
+      "zh": "交换",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "玩具",
+      "zh": "玩具",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "残業",
+      "zh": "加班",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "密か",
+      "zh": "暗中",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "弱み",
+      "zh": "弱点",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "処理",
+      "zh": "处理",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "動画",
+      "zh": "视频",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "責め",
+      "zh": "挑弄",
+      "wrong": [
+        "责弄",
+        "责罚"
+      ],
+      "must": false,
+      "soft": false
+    },
+    {
+      "ja": "解除",
+      "zh": "解除",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "暴走",
+      "zh": "暴走",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "突入",
+      "zh": "闯入",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "AV",
+      "zh": "AV",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "究極",
+      "zh": "究极",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "貸し",
+      "zh": "出租",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "携帯",
+      "zh": "手机",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "検索",
+      "zh": "搜索",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "履歴",
+      "zh": "记录",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "滞在",
+      "zh": "停留",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "祭り",
+      "zh": "祭典",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "一家",
+      "zh": "一家",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "検証",
+      "zh": "验证",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "心底",
+      "zh": "心底",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "永遠",
+      "zh": "永远",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ママ",
+      "zh": "妈妈",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "作り",
+      "zh": "制作",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "一つ",
+      "zh": "一个",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "っ子",
+      "zh": "孩子",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ワタ",
+      "zh": "我",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "母姦",
+      "zh": "母子乱伦",
+      "soft": false,
+      "must": true,
+      "wrong": [
+        "母亲奸",
+        "母奸",
+        "母子相奸",
+        "母亲性交",
+        "母子性交"
+      ]
+    },
+    {
+      "ja": "疑惑",
+      "zh": "疑惑",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "写真",
+      "zh": "照片",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "極上",
+      "zh": "极品",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "運転",
+      "zh": "驾驶",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "特別",
+      "zh": "特别",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "転職",
+      "zh": "跳槽",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "勤務",
+      "zh": "上班",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "新人",
+      "zh": "新人",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "劇場",
+      "zh": "剧场",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "綺麗",
+      "zh": "漂亮",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "進化",
+      "zh": "进化",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "終電",
+      "zh": "末班车",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "不敵",
+      "zh": "无畏",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "笑み",
+      "zh": "笑容",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "過ち",
+      "zh": "过错",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "卑猥",
+      "zh": "猥亵",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "販売",
+      "zh": "销售",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "方法",
+      "zh": "方法",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "崩壊",
+      "zh": "崩溃",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "顛末",
+      "zh": "始末",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "偽り",
+      "zh": "虚假",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "資産",
+      "zh": "资产",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ワシ",
+      "zh": "我",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "宿泊",
+      "zh": "住宿",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "大雨",
+      "zh": "大雨",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "ルポ",
+      "zh": "报道",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "撮影",
+      "zh": "拍摄",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "編集",
+      "zh": "剪辑",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "現場",
+      "zh": "现场",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "舞台",
+      "zh": "舞台",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "業界",
+      "zh": "业界",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "伝説",
+      "zh": "传说",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "復活",
+      "zh": "复活",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "引退",
+      "zh": "引退",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "移籍",
+      "zh": "转会",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "独立",
+      "zh": "独立",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "主演",
+      "zh": "主演",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "共演",
+      "zh": "共演",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "限定",
+      "zh": "限定",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "初回",
+      "zh": "初回",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "特典",
+      "zh": "特典",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "本編",
+      "zh": "正片",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "前編",
+      "zh": "前篇",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "後編",
+      "zh": "后篇",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "新作",
+      "zh": "新作",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "追姦",
+      "zh": "连续侵犯",
+      "soft": false,
+      "must": false,
+      "wrong": [
+        "追奸",
+        "追踪奸淫"
+      ]
+    },
+    {
+      "ja": "父",
+      "zh": "父亲",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "母",
+      "zh": "母亲",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "娘",
+      "zh": "女儿",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "兄",
+      "zh": "哥哥",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "弟",
+      "zh": "弟弟",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "姉",
+      "zh": "姐姐",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "妹",
+      "zh": "妹妹",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "夫",
+      "zh": "丈夫",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "妻",
+      "zh": "妻子",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "甥",
+      "zh": "侄子",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "姪",
+      "zh": "侄女",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "嫁",
+      "zh": "儿媳",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "婿",
+      "zh": "女婿",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "舅",
+      "zh": "公公/岳父",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "姑",
+      "zh": "婆婆/岳母",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "膣",
+      "zh": "阴道",
+      "wrong": [
+        "膣",
+        "阴道口"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "竿",
+      "zh": "茎身",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "胸",
+      "zh": "胸",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "尻",
+      "zh": "臀",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "脚",
+      "zh": "腿",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "足",
+      "zh": "脚",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "肌",
+      "zh": "肌肤",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "唇",
+      "zh": "唇",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "舌",
+      "zh": "舌",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "指",
+      "zh": "手指",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "腰",
+      "zh": "腰",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "腹",
+      "zh": "腹",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "潮",
+      "zh": "潮",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "汗",
+      "zh": "汗",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "涙",
+      "zh": "泪",
+      "wrong": [],
+      "soft": true,
+      "must": false
+    },
+    {
+      "ja": "寮",
+      "zh": "宿舍",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "鎖",
+      "zh": "锁链",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "縄",
+      "zh": "绳",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "鞭",
+      "zh": "鞭",
+      "wrong": [],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "声",
+      "zh": "声音",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "床",
+      "zh": "床",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "裸",
+      "zh": "裸体",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "腋",
+      "zh": "腋下",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "俺",
+      "zh": "我",
+      "wrong": [],
+      "must": false,
+      "soft": true
+    },
+    {
+      "ja": "媚薬",
+      "zh": "媚药",
+      "wrong": [
+        "春药",
+        "迷药",
+        "催情药"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "他人棒",
+      "zh": "他人的身体",
+      "wrong": [
+        "肉棒",
+        "陌生肉棒",
+        "别人的肉棒",
+        "他人肉棒"
+      ],
+      "soft": false,
+      "must": false
+    },
+    {
+      "ja": "キメセク",
+      "zh": "嗑药性爱",
+      "wrong": [
+        "抽插沉迷",
+        "药爱",
+        "嗑药抽插"
+      ],
+      "soft": false,
+      "must": false
+    }
+  ]
+}

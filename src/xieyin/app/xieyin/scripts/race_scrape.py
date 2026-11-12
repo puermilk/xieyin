@@ -20,11 +20,31 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import jav_scrape as j            # 复用 build_nfo / ffprobe_info / crop_poster / code_of
 import race_common as rc
+import actor_names
+import actor_photo_sources as aps
+import copy_scraped
 import fnos_meta as fm
 from javdb_parse import parse_javdb
 from jav321_parse import parse_jav321, make_cid
 
 DELAY = 1.8
+
+_ACTOR_LOCAL = threading.local()
+
+
+def _actor_session():
+    """线程内复用的 JavBus Session（演员图防盗链，必须走真实通道）。"""
+    s = getattr(_ACTOR_LOCAL, "s", None)
+    if s is None:
+        s = j.Session(validate=False)
+        s.ips = list(j.KNOWN_IPS)
+        _ACTOR_LOCAL.s = s
+    return s
+
+
+def _actor_img_ok(b: bytes) -> bool:
+    """演员图常只有 5~10KB，不能用封面那套 >10KB 的 jpeg_ok。"""
+    return bool(b) and len(b) > 500 and b[:3] == b"\xff\xd8\xff"
 
 
 def check_code(body, code):
@@ -100,12 +120,25 @@ def scrape_caribbeancom(code, ips):
     d["title"] = title
     m = re.search(r"(20\d{2})[/-](\d{1,2})[/-](\d{1,2})", html)
     if m:
-        d["release"] = "%s-%02d-%02d" % (m.group(1), int(m.group(2)), int(m.group(3)))
-    # 演员：class 含 actress 的链接；页面里还有一个 "AV女優" 分类标要滤掉。
-    # （不能用「出演」二字定位——它出现在 meta description 里，会抓到页脚文案）
-    actors = [re.sub(r"<[^>]+>", "", x).strip()
-              for x in re.findall(r'class="[^"]*actress[^"]*"[^>]*>([^<]{2,20})', html)]
-    actors = [a for a in dict.fromkeys(actors) if a and a != "AV女優" and not a.startswith("AV")]
+        d["releasedate"] = "%s-%02d-%02d" % (m.group(1), int(m.group(2)), int(m.group(3)))
+        d["release"] = d["releasedate"]
+    # 主演：只取「出演」spec-content 里的 itemprop=actor，不能抓 player-rec-actress
+    #（那是页面底部的相关推荐，会把 3~5 个无关女优写进 NFO）。
+    actors = []
+    m = re.search(r'<span class="spec-title">出演</span>\s*<span class="spec-content">(.*?)</span>\s*</li>',
+                  html, re.S)
+    if m:
+        actors = [re.sub(r"<[^>]+>", "", x).strip()
+                  for x in re.findall(r'itemprop="name"[^>]*>(.*?)</span>', m.group(1), re.S)]
+    if not actors:
+        # 兜底：只取主区块第一个 actress，不再全页扫推荐位
+        m = re.search(r'<span class="spec-title">出演</span>(.*?)</li>', html, re.S)
+        if m:
+            a = re.search(r'<(?:a|span)[^>]*(?:itemprop="name"|class="[^"]*actress[^"]*")[^>]*>([^<]{1,30})',
+                          m.group(1), re.S)
+            if a:
+                actors = [a.group(1).strip()]
+    actors = actor_names.normalize_list(actors)
     if actors:
         d["actors"] = actors
     m = re.search(r"(/moviepages/[^\"\']+/images/l_l\.jpg)", html)
@@ -189,7 +222,122 @@ def merge(fast, slow):
     return out, added
 
 
-def write_artifacts(d, folder: Path, video: Path, args, cover_bytes=None):
+def _jpeg_bytes(im, quality=92):
+    import io
+    buf = io.BytesIO()
+    im.save(buf, "JPEG", quality=quality)
+    return buf.getvalue()
+
+
+def make_thumb_bytes(poster_im, w=190, h=270):
+    """A2：thumb 由 poster 缩小（约 190×270，2:3），不再用封面原图。"""
+    from PIL import Image
+    return _jpeg_bytes(poster_im.resize((w, h), Image.LANCZOS), 88)
+
+
+def _vignette(bg, edge=0.85, min_ratio=0.35):
+    """径向暗角：中心不变，边缘亮度 ×edge；四角/中心比低于 min_ratio 时自动提亮边缘。
+
+    深色封面先压暗再乘暗角会塌成黑框（实测四角/中心 0.19~0.22），
+    这里先量一次四角/中心比，再反推需要的边缘系数，避免死角。
+    """
+    from PIL import Image, ImageChops
+    W, H = bg.size
+    grad = Image.radial_gradient("L").resize((W, H), Image.BILINEAR)
+    floor = edge
+    try:
+        sm = bg.resize((max(8, W // 10), max(8, H // 10)), Image.BILINEAR).convert("L")
+        sw, sh = sm.size
+        px = sm.load()
+        cw, ch = max(1, sw // 5), max(1, sh // 5)
+
+        def mean_box(x0, y0, x1, y1):
+            s = n = 0
+            for x in range(x0, x1):
+                for y in range(y0, y1):
+                    s += px[x, y]
+                    n += 1
+            return s / max(1, n)
+
+        center = mean_box(sw // 2 - cw // 2, sh // 2 - ch // 2,
+                          sw // 2 + cw // 2 + 1, sh // 2 + ch // 2 + 1)
+        corner = sum(mean_box(x0, y0, x0 + cw, y0 + ch) for x0, y0 in (
+            (0, 0), (sw - cw, 0), (0, sh - ch), (sw - cw, sh - ch))) / 4.0
+        if center > 8 and corner > 0:
+            r0 = corner / center
+            if r0 * floor < min_ratio:
+                floor = min(0.97, max(floor, min_ratio / max(r0, 1e-6)))
+    except Exception:
+        floor = edge
+    lut = [255 - int(round(255 * (1.0 - floor) * i / 255.0)) for i in range(256)]
+    mask = grad.point(lut).convert("RGB")
+    return ImageChops.multiply(bg, mask)
+
+
+def make_fanart_bytes(poster_im, W=1920, H=1080):
+    """A2：fanart 1920×1080 标准 16:9。竖版海报模糊铺底 + 居中放完整海报。
+
+    1. 取 poster 等比放大铺满画布 -> GaussianBlur(≈40) -> 亮度 ×0.62 -> 叠加自适应径向暗角；
+    2. 完整 poster 等比缩放到高度 ≈1000px，居中粘贴，右下角不加任何水印/文字。
+    """
+    from PIL import Image, ImageFilter, ImageEnhance
+    iw, ih = poster_im.size
+    scale = max(W / iw, H / ih)
+    nw, nh = int(iw * scale), int(ih * scale)
+    bg = poster_im.resize((nw, nh), Image.LANCZOS)
+    left = (nw - W) // 2; top = (nh - H) // 2
+    bg = bg.crop((left, top, left + W, top + H))
+    bg = bg.filter(ImageFilter.GaussianBlur(40))
+    bg = ImageEnhance.Brightness(bg).enhance(0.62)
+    bg = _vignette(bg)                         # 轻微暗角，突出中间海报
+    ph = 1000                                  # 完整 poster 高度 ≈1000px
+    pw = max(1, int(round(iw * ph / ih)))
+    fg = poster_im.resize((pw, ph), Image.LANCZOS)
+    bg.paste(fg, ((W - pw) // 2, (H - ph) // 2))
+    return _jpeg_bytes(bg, 90)
+
+
+def make_fanart_from_still(still_im, W=1920, H=1080, edge=0.92):
+    """16:9 剧照直接做背景（素人/配信片源）：居中裁到 16:9 再放大，轻微暗角压一下四角。
+
+    这类源本身就是横向画面，模糊铺底反而丢信息；直接放大比「模糊海报铺底」更自然。
+    """
+    from PIL import Image, ImageFilter
+    im = still_im.convert("RGB")
+    iw, ih = im.size
+    tw = W / H
+    if iw / ih > tw:
+        nw = int(ih * tw); left = (iw - nw) // 2
+        im = im.crop((left, 0, left + nw, ih))
+    else:
+        nh = int(iw / tw); top = int((ih - nh) * 0.45)
+        im = im.crop((0, top, iw, top + nh))
+    im = im.resize((W, H), Image.LANCZOS)
+    im = im.filter(ImageFilter.SMOOTH_MORE)      # 800×450 放大后压一下块感
+    return _jpeg_bytes(_vignette(im, edge=edge), 90)
+
+
+def make_poster_from_still(still_im, w=379, h=538):
+    """16:9 剧照做 2:3 竖版海报：整幅居中 + 模糊铺底（不裁切，避免把人物头/脸切掉）。
+
+    素人/配信片源只有 16:9 剧照，直接居中裁 2:3 会切掉两侧人物（实测第一行头都被切没了），
+    所以改成「完整画面缩到宽度 + 上下模糊铺底」，与影视库常见的 landscape→poster 处理一致。
+    """
+    from PIL import Image, ImageFilter, ImageEnhance
+    im = still_im.convert("RGB")
+    bg = im.resize((w, h), Image.LANCZOS).filter(ImageFilter.GaussianBlur(18))
+    bg = ImageEnhance.Brightness(bg).enhance(0.6)
+    fw = w
+    fh = max(1, int(round(im.size[1] * fw / max(1, im.size[0]))))
+    if fh > h:
+        fh = h
+        fw = max(1, int(round(im.size[0] * fh / max(1, im.size[1]))))
+    fg = im.resize((fw, fh), Image.LANCZOS)
+    bg.paste(fg, ((w - fw) // 2, (h - fh) // 2))
+    return bg
+
+
+def write_artifacts(d, folder: Path, video: Path, args, cover_bytes=None, cover_kind=None):
     stem = video.stem
     info = {} if (args.no_probe or not j.media_ext.is_probeable(video.name)) \
         else j.ffprobe_info(video)
@@ -222,20 +370,86 @@ def write_artifacts(d, folder: Path, video: Path, args, cover_bytes=None):
             cur = path.read_bytes()
             return (not rc.jpeg_ok(cur) and data_len > len(cur)) or allow
 
-        if allowed(full, len(cover_bytes)):
-            full.write_bytes(cover_bytes)
-        if allowed(thumb, len(cover_bytes)):
-            thumb.write_bytes(cover_bytes)
-        if allowed(poster, len(cover_bytes)):
-            if not j.crop_poster(full, poster):
-                poster.write_bytes(cover_bytes)   # 裁剪失败回退封面本身
+        # A2：按用途生成三张图（不再把封面包原样落盘）。
+        # cover_kind：vertical/pl_right/still -> poster+thumb+fanart；lowres/None -> 仅 poster 回退
+        do_full = cover_kind in ("vertical", "pl_right", "still")
+        poster_im = None
+        still_im = None
+        poster_bytes = None
+        try:
+            from PIL import Image, ImageFile
+            import io
+            ImageFile.LOAD_TRUNCATED_IMAGES = True   # 图床限速常返回半截 JPEG
+            with Image.open(io.BytesIO(cover_bytes)) as im:
+                im.load()
+                if cover_kind == "still":
+                    still_im = im.convert("RGB").copy()     # 剧照直接做背景
+                    poster_im = make_poster_from_still(still_im)
+                else:
+                    poster_im = j._poster_im(im, 379, 538, right_half=(cover_kind == "pl_right"))
+            poster_bytes = _jpeg_bytes(poster_im, 92)
+        except Exception as e:
+            print(f"   ! 海报生成失败 {video.name}: {e}", file=sys.stderr)
+
+        if poster_bytes:
+            if allowed(poster, len(poster_bytes)):
+                poster.write_bytes(poster_bytes)
+            if do_full:
+                thumb_bytes = make_thumb_bytes(poster_im)
+                if allowed(thumb, len(thumb_bytes)):
+                    thumb.write_bytes(thumb_bytes)
+                try:
+                    if cover_kind == "still" and still_im is not None:
+                        fanart_bytes = make_fanart_from_still(still_im)
+                    else:
+                        fanart_bytes = make_fanart_bytes(poster_im)
+                except Exception:
+                    fanart_bytes = None          # fanart 生成失败不写，不回退原图
+                if fanart_bytes and allowed(full, len(fanart_bytes)):
+                    full.write_bytes(fanart_bytes)
         # 1.7.4：别名只在单视频目录写——多视频/平铺目录里别名会互相覆盖
         nvid = sum(1 for x in folder.iterdir()
                    if x.is_file() and j.media_ext.is_video(x.name))
         if nvid <= 1:
             for al in (alias_poster, alias_folder):
-                if allowed(al, len(cover_bytes)) and poster.exists():
+                if allowed(al, len(poster_bytes or cover_bytes)) and poster.exists():
                     shutil.copyfile(poster, al)
+    # 演员头像：下载 JavBus 女优图，NFO 里写绝对路径（新条目相对路径会失败）
+    if not args.no_images and d.get("actor_images"):
+        thumbs = d.setdefault("actor_thumbs", {})
+        for ai in d["actor_images"]:
+            name = (ai.get("name") or "").strip()
+            url = (ai.get("url") or "").strip()
+            if not name or name in thumbs:
+                continue
+            safe = re.sub(r'[\\/:*?"<>|]', "_", name)[:60] or "actor"
+            fp = folder / (stem + "-actor-" + safe + ".jpg")
+            if fp.exists() and _actor_img_ok(fp.read_bytes()):
+                thumbs[name] = str(fp.resolve())
+                continue
+            raw, used, source = aps.resolve(
+                name, url,
+                primary_fetch=lambda u: _actor_session().fetch_url(
+                    u, referer="https://www.javbus.com/"))
+            if not _actor_img_ok(raw):
+                # 最后兜底：从已下载封面裁头像
+                pdata = b""
+                try:
+                    pp = folder / (stem + "-poster.jpg")
+                    if pp.exists():
+                        pdata = pp.read_bytes()
+                except OSError:
+                    pass
+                if not pdata and cover_bytes:
+                    pdata = cover_bytes
+                raw = aps.avatar_from_cover(pdata)
+                source = "poster"
+            if _actor_img_ok(raw):
+                fp.write_bytes(raw)
+                thumbs[name] = str(fp.resolve())
+                if source != "primary":
+                    print("   演员图兜底 %s <- %s" % (name, source))
+            time.sleep(0.25)
     # 尊重既有刮削（PT 资源常自带发布组 nfo）：不是本工具写的 nfo 默认不覆盖，
     # 本轮只补缺失/劣质的图片。需要强制重写时加 --force。
     if nfo.exists() and not had_our_nfo and not getattr(args, "force", False):
@@ -270,24 +484,28 @@ def pick_backdrop_url(cands):
 
 
 def cover_candidates(cover_urls, merged):
-    """封面候选序列（问题①）：择优首选 -> 全部源候选 -> merged.cover ->
-    DMM 派生（cid 的 ps/pl），去重。单域名间歇不可达时逐个轮转兜底。"""
+    """封面候选序列（A1）：竖版大图优先 -> 横版包装图(DMM pl)次选 -> 低分辨率 ps 兜底。
+
+    select_cover 会按实际像素判断（竖版/横版包装/低分辨率拒收），不靠 URL 猜，
+    所以这里只需按「期望质量」排序；select_cover 最多取前 3 个。
+    """
     cid = make_cid((merged or {}).get("code") or "")
     seq = []
-    # 实测（本机直连）：DMM pl 167KB / 2.7s，jdbstatic 185KB / 15s，
-    # DMM ps 仅 12KB。所以 DMM 大图优先，jdbstatic 降为兜底。
-    if cid:
-        for host, pre in (("pics.dmm.com", "/digital/video/"),
-                          ("imgsrc.dmm.com", "/pics/digital/video/")):
-            seq.append("https://%s%s%s/%spl.jpg" % (host, pre, cid, cid))
+    # 竖版大图优先：javbus / jdbstatic 等非 DMM 源封面（多为竖版正封面）
     seq.append(pick_poster_url(cover_urls))
     seq += list(cover_urls or [])
     if merged:
         seq.append(merged.get("cover"))
-        if cid:
-            for host, pre in (("pics.dmm.com", "/digital/video/"),
-                              ("imgsrc.dmm.com", "/pics/digital/video/")):
-                seq.append("https://%s%s%s/%sps.jpg" % (host, pre, cid, cid))
+    # 横版包装图（DMM pl 800×538，左右双封面）作为次选 -> select_cover 取右半张
+    if cid:
+        for host, pre in (("pics.dmm.com", "/digital/video/"),
+                          ("imgsrc.dmm.com", "/pics/digital/video/")):
+            seq.append("https://%s%s%s/%spl.jpg" % (host, pre, cid, cid))
+    # 低分辨率 ps（147×200）兜底 -> select_cover 会拒收，仅留作 poster 回退
+    if cid:
+        for host, pre in (("pics.dmm.com", "/digital/video/"),
+                          ("imgsrc.dmm.com", "/pics/digital/video/")):
+            seq.append("https://%s%s%s/%sps.jpg" % (host, pre, cid, cid))
     out = []
     for u in seq:
         if isinstance(u, str) and u.startswith("http") and not rc._BAD.search(u) \
@@ -296,35 +514,69 @@ def cover_candidates(cover_urls, merged):
     return out
 
 
-def fetch_cover(urls, log, attempts=2, code=""):
-    """逐候选重试下图。图床间歇可达时单次失败不再静默丢封面；
-    全部失败写 WARN(E001) 到日志，返回 (None, None)。
+MIN_COVER_WIDTH = 300          # A1：宽度 < 300px 拒收（ADN-556 的 ps.jpg 147×200）
+MIN_COVER_BYTES = 30 * 1024    # A1：文件 < 30KB 拒收
+PL_RATIO_LO, PL_RATIO_HI = 1.35, 1.55   # DMM pl 横版包装图比例区间
+STILL_RATIO_HI = 2.00          # 16:9 剧照上限（素人/配信片源，800×450 / 960×540）
 
-    最后一层兜底：直接推导的 DMM cid 常因内部前缀（h_/18/1）拿不到图，
-    此时用 javdatabase 页面解析真实 cid 再走 DMM 双镜像下载。
+
+def _cover_dims(data):
+    """解码 JPEG 拿到 (宽, 高)；失败返回 (0, 0)。"""
+    try:
+        from PIL import Image
+        import io
+        with Image.open(io.BytesIO(data)) as im:
+            return im.size
+    except Exception:
+        return (0, 0)
+
+
+def select_cover(urls, log, code=""):
+    """A1 选图：最多尝试 3 个候选，按实际像素判断，命中即停（不靠 URL 猜）。
+
+    返回 (cover_bytes, used_url, kind)：
+      kind='vertical'  竖版大图（width<height 且 width≥300px）——最优 poster 源
+      kind='pl_right'  横版包装图（比例≈1.35–1.55，DMM pl 这类）——取右半张得竖版块
+      kind='still'     16:9 剧照（比例 1.55–2.00，素人/配信片源）——整幅裁 2:3 做 poster，本身做 fanart
+      kind='lowres'    全部候选不合格但至少下载到一张（低分辨率/超宽）——仅 poster 回退
+      kind=None        一张都没下载成功
+    width<300px 或文件<30KB 一律拒收；全部不合格写 WARN cover_lowres。
     """
     tried = []
-    for a in range(max(1, attempts)):      # 轮转：每轮把所有候选试一遍
-        for u in urls:
-            cov = rc.download_cover(u)
-            if cov:
-                return cov, u
-            tried.append("%s#%d" % ((u.split("/")[2] if "://" in u else u), a + 1))
-            time.sleep(0.4)          # 拉开节奏，避免图床限流
-    if code:
-        realcid = rc.javdatabase_cid(code)
-        if realcid:
-            for host, pre in (("pics.dmm.com", "/digital/video/"),
-                              ("imgsrc.dmm.com", "/pics/digital/video/")):
-                for suf in ("pl", "ps"):
-                    u = "https://%s%s%s/%s%s.jpg" % (host, pre, realcid, realcid, suf)
-                    cov = rc.download_cover(u)
-                    if cov:
-                        return cov, u
-                    tried.append("javdb-cid:%s" % suf)
+    lowres = None
+    for u in (urls or [])[:3]:
+        host = u.split("/")[2] if "://" in u else u
+        cov = rc.download_cover(u)
+        if not cov:
+            tried.append("%s#下载失败" % host)
+            time.sleep(0.4)
+            continue
+        w, h = _cover_dims(cov)
+        if w < MIN_COVER_WIDTH or len(cov) < MIN_COVER_BYTES:
+            lowres = (cov, u)                       # 留作 poster 回退
+            if log:
+                log.write("   [封面] 拒收 %s %dx%d %dB（低分辨率）\n" % (host, w, h, len(cov)))
+            tried.append("%s#%dx%d" % (host, w, h))
+            time.sleep(0.4)
+            continue
+        if w < h:
+            return cov, u, "vertical"
+        ratio = w / h
+        if PL_RATIO_LO <= ratio <= PL_RATIO_HI:
+            return cov, u, "pl_right"
+        if ratio <= STILL_RATIO_HI:                 # 16:9 剧照（素人/配信片源）
+            return cov, u, "still"
+        lowres = (cov, u)                           # 超宽横幅等，留作回退
+        if log:
+            log.write("   [封面] 拒收 %s %dx%d（超宽比例 %.2f）\n" % (host, w, h, ratio))
+        tried.append("%s#%dx%d" % (host, w, h))
+        time.sleep(0.4)
     if log:
-        log.write("   [封面] 下载失败 E001 尝试 %s\n" % (", ".join(tried) or "无候选"))
-    return None, None
+        log.write("   [封面] WARN cover_lowres %s（尝试 %s）\n" % (
+            code, ", ".join(tried) or "无候选"))
+    if lowres:
+        return lowres[0], lowres[1], "lowres"
+    return None, None, None
 
 
 def export_target(args, folder, video):
@@ -361,7 +613,7 @@ class _LockedLog:
             self._f.close()
 
 
-def emit_artifact(d, folder, video, args, cover_bytes=None):
+def emit_artifact(d, folder, video, args, cover_bytes=None, cover_kind=None):
     """方案A 产物分发（用户设计文档模式矩阵）：
 
     push    = 推送飞牛影视 API（POST /api/media/meta/update），PT 目录零写入
@@ -383,9 +635,10 @@ def emit_artifact(d, folder, video, args, cover_bytes=None):
         if ok:
             fm.mark_pushed(video)      # 失败不标 -> 下次可重试
     if "export" in parts:
-        write_artifacts(d, export_target(args, folder, video), video, args, cover_bytes)
+        write_artifacts(d, export_target(args, folder, video), video, args,
+                        cover_bytes, cover_kind)
     if "inplace" in parts:
-        write_artifacts(d, folder, video, args, cover_bytes)
+        write_artifacts(d, folder, video, args, cover_bytes, cover_kind)
     return pushed
 
 
@@ -420,11 +673,11 @@ def race_one(code, pool, folder, video, args, log):
         except Exception as e:
             return n, round(time.time() - s, 2), None, str(e)
 
-    def emit(d, cov):
+    def emit(d, cov, kind=None):
         # 问题①：poster/backdrop URL 择优注入（build_payload 直接消费）
         d["poster_url"] = pick_poster_url(cover_urls) or d.get("cover") or ""
         d["backdrop_url"] = pick_backdrop_url(cover_urls) or ""
-        r = emit_artifact(d, folder, video, args, cov)
+        r = emit_artifact(d, folder, video, args, cov, kind)
         if r is not None:
             push_results.append(r)
 
@@ -451,15 +704,17 @@ def race_one(code, pool, folder, video, args, log):
         log.write("   [%6.2fs] %-10s 命中并写入 nfo（%d 字段）\n" % (rel, n, len(merged)))
         break                      # 成功即停
 
-    # 兜底：慢源没下图成功 -> 全部候选逐个重试（图床间歇可达时单次失败不弃权）
+    # 兜底：慢源没下图成功 -> A1 选图（最多 3 候选，按像素判断）
     if sink != "push" and not args.no_images and not cover_done and merged:
-        cov, used = fetch_cover(cover_candidates(cover_urls, merged), log,
-                                code=(merged.get("code") or ""))
+        cov, used, kind = select_cover(cover_candidates(cover_urls, merged), log,
+                                       code=(merged.get("code") or ""))
         if cov:
             cover_size = len(cov)
-            emit(merged, cov)
-            log.write("   [兜底] 下图 %dB（%s）\n" % (
-                len(cov), (used or "").split("/")[2] if used and "://" in used else "?"))
+            emit(merged, cov, kind)
+            log.write("   [兜底] 下图 %dB（%s，%s）\n" % (
+                len(cov), (used or "").split("/")[2] if used and "://" in used else "?",
+                {"vertical": "竖版大图", "pl_right": "横版包装右半",
+                 "lowres": "低分辨率回退"}.get(kind, kind)))
 
     if not merged:
         return "FAIL  %s: 全部源未刮出（%s）" % (
@@ -468,6 +723,13 @@ def race_one(code, pool, folder, video, args, log):
     if "push" in sink and "export" not in sink and "inplace" not in sink \
             and push_results and not any(push_results):
         return "FAIL  %s: 刮削成功但推送失败（元数据未落地）" % video.name
+    copy_root = str(getattr(args, "copy_root", "") or "").strip()
+    if copy_root and sink != "preview":
+        try:
+            copy_scraped.copy_scraped(merged.get("code") or code, folder, video,
+                                      copy_root, log=log.write)
+        except Exception as e:
+            log.write("   [复制] WARN %s\n" % e)
     first = next((t for t in timeline if t[2] == "FIRST"), None)
     want_img = sink != "push" and not args.no_images
     return ("OK    %s <- %s | %s | 首出 %ss | 完成 %ss | 字段 %d | 导演 %s | 类别 %d%s" % (
@@ -511,6 +773,8 @@ def main():
                     help="飞牛访问令牌（Bearer）")
     ap.add_argument("--meta-dir", default=os.environ.get("XIEYIN_META_DIR", ""),
                     help="独立元数据目录（sink=export 时必填）")
+    ap.add_argument("--copy-root", default=os.environ.get("XIEYIN_COPY_ROOT", ""),
+                    help="刮削后复制到 <copy-root>/<番号>/（留空不复制）")
     args = ap.parse_args()
     bad = [s for s in str(args.sink).split("+")
            if s not in ("push", "export", "preview", "inplace")]

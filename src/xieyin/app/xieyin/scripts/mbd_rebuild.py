@@ -31,7 +31,7 @@ import urllib.request
 # 官方前端硬编码的签名常量（非用户凭据）
 SALT = "NDzZTVxnRKP8Z0jXg1VAMonaG8akvh"
 APIKEY = "16CCEB3D-AB42-077D-36A1-F355324E4237"
-BASE = "http://127.0.0.1:8005"
+BASE = os.environ.get("XIEYIN_FNOS_API") or "http://127.0.0.1:8005"
 API = "/v/api/v1"
 TIMEOUT = 10
 

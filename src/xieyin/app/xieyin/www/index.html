@@ -6,505 +6,185 @@
 <title>撷引 · 媒体元信息刮削</title>
 <link rel="icon" type="image/png" href="/icon.png">
 <style>
-/* ============ 设计令牌（字节 B 端 · 深色优先） ============ */
-:root{
-  --bg:#14161A; --panel:#1C1F26; --panel2:#22262E; --line:#2C313A;
-  --text:#E7E9EC; --text2:#A6ABB5; --text3:#6E7580;
-  --brand:#007FFF; --brand-hov:#2E92FF; --brand-dim:rgba(0,127,255,.14);
-  --ok:#2EA44F; --ok-dim:rgba(46,164,79,.14);
-  --warn:#E0A400; --warn-dim:rgba(224,164,0,.14);
-  --err:#E5484D; --err-dim:rgba(229,72,77,.14);
-  --radius:10px; --shadow:0 6px 24px rgba(0,0,0,.35);
-}
-[data-theme="light"]{
-  --bg:#F5F6F8; --panel:#FFFFFF; --panel2:#F0F2F5; --line:#E3E6EB;
-  --text:#1F2329; --text2:#5A6270; --text3:#8B93A1;
-  --brand-dim:rgba(0,127,255,.09); --ok-dim:rgba(46,164,79,.10);
-  --warn-dim:rgba(224,164,0,.12); --err-dim:rgba(229,72,77,.10);
-  --shadow:0 6px 24px rgba(31,35,41,.10);
-}
-*{box-sizing:border-box; margin:0; padding:0}
-body{
-  background:var(--bg); color:var(--text);
-  font:14px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
-}
-a{color:var(--brand); text-decoration:none}
-button{font:inherit; cursor:pointer; border:0; background:none; color:inherit}
-input,select{
-  font:inherit; color:var(--text); background:var(--panel2);
-  border:1px solid var(--line); border-radius:8px; padding:8px 12px; outline:none; min-width:0;
-}
-input:focus,select:focus{border-color:var(--brand)}
-input[type="checkbox"]{width:auto; accent-color:var(--brand)}
-::placeholder{color:var(--text3)}
-
-/* ============ 布局 ============ */
-.top{
-  position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:12px;
-  padding:0 20px; height:56px; background:var(--panel); border-bottom:1px solid var(--line);
-}
-.logo{display:flex; align-items:center; gap:10px}
-.logo img{width:28px; height:28px; border-radius:7px}
-.logo b{font-size:16px; letter-spacing:.5px}
-.logo .sub{color:var(--text3); font-size:12px}
-.top .sp{flex:1}
-.layout{display:flex; min-height:calc(100vh - 56px)}
-.nav-item{
-  display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-  padding:10px 14px; margin-bottom:4px; border-radius:8px; color:var(--text2); font-size:14px;
-}
-.nav-item:hover{background:var(--panel2); color:var(--text)}
-.nav-item.on{background:var(--brand-dim); color:var(--brand); font-weight:600}
-.nav-item .ic{width:18px; text-align:center; opacity:.9; font-style:normal}
-.main{flex:1; padding:28px 24px 64px; max-width:960px; margin:0 auto; min-width:0}
-.view{display:block}
-
-/* ============ 组件 ============ */
-.card{
-  background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-  padding:20px; margin-bottom:16px;
-}
-.card h2{font-size:15px; margin-bottom:4px}
-.card .desc{color:var(--text3); font-size:12.5px; margin-bottom:16px}
-.row{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px}
-.row:last-child{margin-bottom:0}
-.grow{flex:1; min-width:180px}
-label.ck{display:flex; align-items:center; gap:7px; color:var(--text2); font-size:13px; cursor:pointer; user-select:none}
-
-.btn{
-  display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
-  border-radius:8px; background:var(--panel2); color:var(--text); border:1px solid var(--line);
-}
-.btn:hover{background:var(--line)}
-.btn.primary{background:var(--brand); border-color:var(--brand); color:#fff}
-.btn.primary:hover{background:var(--brand-hov)}
-.btn.danger{color:var(--err); border-color:var(--err)}
-.btn.danger:hover{background:var(--err-dim)}
-.btn.sm{padding:5px 11px; font-size:12.5px; border-radius:7px}
-.btn:disabled{opacity:.45; cursor:not-allowed}
-
-.badge{
-  display:inline-flex; align-items:center; gap:6px; padding:3px 10px;
-  border-radius:20px; font-size:12px; background:var(--panel2); color:var(--text2);
-  white-space:nowrap;
-}
-.badge .dot{width:7px; height:7px; border-radius:50%; background:var(--text3)}
-.badge.ok{background:var(--ok-dim); color:var(--ok)} .badge.ok .dot{background:var(--ok)}
-.badge.warn{background:var(--warn-dim); color:var(--warn)} .badge.warn .dot{background:var(--warn)}
-.badge.err{background:var(--err-dim); color:var(--err)} .badge.err .dot{background:var(--err)}
-.badge.run{background:var(--brand-dim); color:var(--brand)} .badge.run .dot{background:var(--brand)}
-
-.sw{position:relative; width:42px; height:24px; flex:none; cursor:pointer}
-.sw input{position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer}
-.sw i{position:absolute; inset:0; border-radius:12px; background:var(--line)}
-.sw i::after{
-  content:""; position:absolute; top:3px; left:3px; width:18px; height:18px;
-  border-radius:50%; background:#fff;
-}
-.sw input:checked + i{background:var(--brand)}
-.sw input:checked + i::after{left:21px}
-
-.stats{display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px}
-.stat{
-  flex:1; min-width:150px; background:var(--panel); border:1px solid var(--line);
-  border-radius:var(--radius); padding:16px 18px;
-}
-.stat .k{color:var(--text3); font-size:12px; margin-bottom:6px}
-.stat .v{font-size:22px; font-weight:600}
-.stat .v.sm{font-size:14px; font-weight:500; word-break:break-all}
-
-.log{
-  background:#0E1013; border:1px solid var(--line); border-radius:8px;
-  padding:12px 14px; height:340px; overflow:auto;
-  font:12.5px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace; color:#C6CBD4;
-  white-space:pre-wrap; word-break:break-all;
-}
-.log .lv-info{color:#8FB9E8}
-.log .lv-warn{color:#E8C176}
-.log .lv-err{color:#F2878B}
-.log .ec{display:inline-block; padding:0 5px; margin-right:6px; border-radius:4px; font-size:11px}
-.log .ec.E001{background:rgba(229,72,77,.25); color:#F2878B}
-.log .ec.E002{background:rgba(224,164,0,.25); color:#E8C176}
-.log .ec.E003{background:rgba(0,127,255,.25); color:#8FB9E8}
-.log .ec.E004{background:rgba(150,120,220,.25); color:#BBA8EE}
-
-.list{border:1px solid var(--line); border-radius:8px; overflow:hidden}
-.list .it{
-  display:flex; align-items:center; gap:12px; padding:11px 14px;
-  border-bottom:1px solid var(--line); cursor:pointer;
-}
-.list .it:last-child{border-bottom:0}
-.list .it:hover{background:var(--panel2)}
-.list .it.on{background:var(--brand-dim)}
-.list .nm{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.empty{padding:32px; text-align:center; color:var(--text3)}
-
-.fold{border-top:1px solid var(--line); margin-top:16px; padding-top:14px}
-.fold summary{
-  cursor:pointer; color:var(--text2); font-size:13px; user-select:none;
-  display:flex; align-items:center; gap:8px; list-style:none;
-}
-.fold summary::-webkit-details-marker{display:none}
-.fold summary::before{content:"▸"; color:var(--text3)}
-.fold[open] summary::before{content:"▾"}
-.fold .body{padding-top:14px}
-
-.mask{
-  position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.55);
-  display:flex; align-items:center; justify-content:center; padding:20px;
-}
-.mask.hidden{display:none}
-.modal{
-  width:min(520px,100%); max-height:80vh; overflow:auto;
-  background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:22px;
-}
-.modal h3{font-size:15px; margin-bottom:12px}
-.modal .acts{display:flex; justify-content:flex-end; gap:10px; margin-top:18px}
-
-#toast{
-  position:fixed; left:50%; bottom:32px; transform:translateX(-50%); z-index:99;
-  background:var(--panel2); border:1px solid var(--line); color:var(--text);
-  padding:10px 20px; border-radius:10px; box-shadow:var(--shadow); display:none;
-}
-#toast.err{border-color:var(--err); color:var(--err)}
-
-.muted{color:var(--text3); font-size:12.5px}
-.hr{height:1px; background:var(--line); margin:16px 0}
-.tag{display:inline-block; padding:1px 8px; border-radius:5px; background:var(--panel2); color:var(--text3); font-size:11.5px; margin-right:4px}
-.warn\boxed{
-  background:var(--warn-dim); border:1px solid var(--warn); color:var(--warn);
-  border-radius:8px; padding:11px 14px; font-size:13px; margin:12px 0;
-}
-.notice-warn{
-  background:var(--err-dim); border:1px solid var(--err); color:var(--err);
-  border-radius:10px; padding:12px 16px; font-size:13.5px; line-height:1.85;
-  margin:0 0 16px; font-weight:600;
-}
-.notice-warn b{color:var(--text1)}
-.err\boxed{
-  background:var(--err-dim); border:1px solid var(--err); color:var(--err);
-  border-radius:8px; padding:11px 14px; font-size:13px; margin:12px 0;
-}
-footer{
-  padding:20px 24px 32px; color:var(--text3); font-size:12px; line-height:1.9;
-}
-@media (max-width:860px){
-  .main{padding:16px}
-}
+:root{--bg:#15171b;--panel:#1c1f24;--panel2:#22262c;--line:#2e333b;--text:#e6e8eb;--text2:#a7adb6;--text3:#727a86;--accent:#5b8cff;--accent-dim:#1e2a44;--ok:#4caf6d;--warn:#d7a43a;--err:#e06c63}
+[data-theme="light"]{--bg:#f4f5f7;--panel:#fff;--panel2:#f7f8fa;--line:#e1e4e9;--text:#1f2329;--text2:#5c6470;--text3:#8a929e;--accent:#3b6fe0;--accent-dim:#eaf0ff;--ok:#2f8a4c;--warn:#a86b00;--err:#c0392b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:13px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+a{color:var(--accent);text-decoration:none}button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,select{font:inherit;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:5px 8px;outline:none;min-width:0;height:30px}
+input:focus,select:focus{border-color:var(--accent)}input[type=checkbox]{height:auto;accent-color:var(--accent)}::placeholder{color:var(--text3)}
+.top{height:46px;display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}.brand img{width:22px;height:22px;border-radius:3px}.brand span{font-weight:400;color:var(--text3);font-size:12px}.top .sp{flex:1}
+.shell{display:flex;min-height:calc(100vh - 46px)}
+.side{width:144px;flex:none;padding:10px 6px;border-right:1px solid var(--line);background:var(--panel);position:sticky;top:46px;height:calc(100vh - 46px)}
+.nav-item{display:block;width:100%;text-align:left;padding:7px 10px;margin-bottom:2px;border-radius:3px;color:var(--text2);font-size:13px}
+.nav-item:hover{background:var(--panel2);color:var(--text)}.nav-item.on{background:var(--accent-dim);color:var(--accent);font-weight:600}
+.main{flex:1;min-width:0;padding:18px 24px 60px;max-width:1060px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+.page-head{display:flex;align-items:baseline;gap:10px;margin:2px 0 14px}.page-head h1{font-size:17px;font-weight:600}.page-head p{color:var(--text3);font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px;margin-bottom:10px}
+.card h2{font-size:13px;font-weight:600;margin-bottom:10px}.card .desc{color:var(--text3);font-size:12px;margin:-4px 0 10px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.row:last-child{margin-bottom:0}.grow{flex:1;min-width:180px}
+label.ck{display:flex;align-items:center;gap:5px;color:var(--text2);font-size:12.5px;cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 11px;border-radius:3px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font-size:12.5px;white-space:nowrap}
+.btn:hover{background:var(--line)}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{filter:brightness(1.08)}.btn.danger{color:var(--err);border-color:var(--err)}.btn.danger:hover{background:rgba(224,108,99,.12)}.btn.sm{height:25px;padding:0 8px;font-size:12px}.btn:disabled{opacity:.45;cursor:not-allowed}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:1px 7px;border-radius:3px;font-size:11.5px;background:var(--panel2);color:var(--text2);white-space:nowrap}.badge .dot{width:5px;height:5px;border-radius:50%;background:var(--text3)}
+.badge.ok{background:rgba(76,175,109,.13);color:var(--ok)}.badge.ok .dot{background:var(--ok)}.badge.warn{background:rgba(215,164,58,.13);color:var(--warn)}.badge.warn .dot{background:var(--warn)}.badge.err{background:rgba(224,108,99,.13);color:var(--err)}.badge.err .dot{background:var(--err)}.badge.run{background:var(--accent-dim);color:var(--accent)}.badge.run .dot{background:var(--accent)}
+.sw{position:relative;width:34px;height:20px;flex:none;cursor:pointer}.sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}.sw i{position:absolute;inset:0;border-radius:10px;background:var(--line)}.sw i::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff}.sw input:checked+i{background:var(--accent)}.sw input:checked+i::after{left:17px}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:10px}.meta .mi{background:var(--panel);padding:9px 12px}.meta .mi>span:first-child{display:block;color:var(--text3);font-size:11.5px;margin-bottom:2px}.meta .mi b,.meta .mi strong{font-weight:500;font-size:13px}
+.log{background:#0d0f12;border:1px solid var(--line);border-radius:3px;padding:9px 11px;height:300px;overflow:auto;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:#c6cbd4;white-space:pre-wrap;word-break:break-all}
+.log .lv-info{color:#9ab8de}.log .lv-warn{color:#d8bd7e}.log .lv-err{color:#e08a84}.log .ec{display:inline-block;padding:0 4px;margin-right:5px;border-radius:2px;font-size:10.5px}
+.list{border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--panel)}.list .it{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid var(--line);cursor:pointer}.list .it:last-child{border-bottom:0}.list .it:hover{background:var(--panel2)}.list .it.on{background:var(--accent-dim)}.list .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.empty{padding:24px;text-align:center;color:var(--text3);font-size:12px}
+details.fold{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}details.fold summary{cursor:pointer;color:var(--text2);font-size:12.5px;list-style:none}details.fold summary::-webkit-details-marker{display:none}details.fold summary::before{content:"+ ";color:var(--text3)}details.fold[open] summary::before{content:"- "}details.fold .body{padding-top:10px}
+.mask{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px}.mask.hidden{display:none}.modal{width:min(480px,100%);max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:18px}.modal h3{font-size:14px;margin-bottom:10px}.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99;background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:8px 14px;border-radius:3px;display:none;font-size:12.5px}#toast.err{border-color:var(--err);color:var(--err)}
+.muted{color:var(--text3);font-size:12px}.testout{white-space:pre-wrap;line-height:1.7;background:var(--panel2);border:1px solid var(--line);border-radius:3px;padding:8px 10px;margin-top:4px;min-height:20px}.hr{height:1px;background:var(--line);margin:12px 0}.tag{display:inline-block;padding:0 5px;border-radius:2px;background:var(--panel2);color:var(--text3);font-size:11px;margin-right:3px}.errbox{background:rgba(224,108,99,.09);border:1px solid var(--err);color:var(--err);border-radius:3px;padding:8px 10px;font-size:12px;margin:8px 0}.notice{background:rgba(215,164,58,.08);border:1px solid rgba(215,164,58,.5);color:var(--text2);border-radius:3px;padding:8px 10px;font-size:12px;margin-bottom:10px}
+footer{padding:12px 0 20px;color:var(--text3);font-size:11.5px;line-height:1.8}
+@media(max-width:760px){.shell{display:block}.side{width:100%;height:auto;position:static;display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px}.nav-item{width:auto;white-space:nowrap;margin:0 2px}.main{padding:14px}.meta{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
+<header class="top"><div class="brand"><img src="/icon.png" alt=""><b>撷引</b><span>媒体元信息刮削</span></div><div class="sp"></div><span id="srvInfo" class="badge"><span class="dot"></span>连接中</span><button class="btn sm" id="themeBtn">主题</button></header>
+<div class="shell">
+<aside class="side"><button class="nav-item on" data-route="workbench">工作台</button><button class="nav-item" data-route="translate">翻译</button><button class="nav-item" data-route="tools">工具</button><button class="nav-item" data-route="settings">设置</button></aside>
+<main class="main">
 
-<header class="top">
-  <div class="logo">
-    <img src="/icon.png" alt="撷引">
-    <b>撷引</b><span class="sub">媒体元信息刮削</span>
+<section class="view on" id="v-workbench">
+  <div class="page-head"><h1>工作台</h1><p>三步设置，保存后直接开跑</p></div>
+  <div class="meta"><div class="mi"><span>版本</span><b id="ovVersion">–</b></div><div class="mi"><span>状态</span><span id="ovState" class="badge"><span class="dot"></span>空闲</span></div><div class="mi"><span>输出</span><span id="ovPt" class="badge ok"><span class="dot"></span>写入文件夹</span></div><div class="mi"><span>依赖</span><b id="ovDeps">–</b></div></div>
+  <div class="notice">只新增 NFO / 图片，不改动、不移动、不重命名视频文件。</div>
+  <div class="card">
+    <h2>三步开刮</h2>
+    <div class="row"><span class="badge run">1</span><input class="grow" id="root" placeholder="媒体目录，如 /vol1/1000/Media" spellcheck="false"><button class="btn" id="browse">选择目录</button><button class="btn" id="saveRoot">设为默认</button></div>
+    <div class="row" id="rootChips"></div>
+    <div class="row"><span class="badge run">2</span><label class="ck"><input type="checkbox" id="quickPlotZh" checked>标题/简介翻译</label><select id="quickPreset" style="width:235px"><option value="local-glm">本地 GLM-5.3-Flash（推荐）</option><option value="local-ds">本地 DeepSeek-V4-Pro</option><option value="opencode">OpenCode Go DeepSeek</option><option value="bing">Bing 免费直译</option><option value="custom">自定义（沿用当前）</option></select><span class="muted" id="quickModel"></span></div>
+    <div class="row" style="padding-left:30px"><label class="ck"><input type="checkbox" id="quickActorSync">演员整理（补头像 / 合并重名 / 回写 NFO）</label><span class="muted">勾选后刮削完成自动执行</span></div>
+    <div class="row"><span class="badge">3</span><label class="ck"><input type="checkbox" id="quickCopyEnabled">按番号复制到</label><input class="grow" id="quickCopyRoot" placeholder="/vol1/1000/整理输出（可留空）" spellcheck="false"></div>
+    <div class="row"><button class="btn primary" id="quickSaveStart">保存并开始刮削</button><button class="btn" data-jav="dry">试运行</button><button class="btn" data-quick="scan">扫描</button><button class="btn" data-quick="check">体检</button><span class="muted">保存后按这套配置直接开跑</span></div>
+    <div id="fnosHint" class="errbox" style="display:none">飞牛同步已关闭：只写本地 NFO，飞牛界面不会自动刷新。到「设置 → 飞牛影视」打开“同步标题/简介到飞牛”。</div>
+    <details class="fold"><summary>高级刮削选项</summary><div class="body">
+      <div class="row"><input class="grow" id="javOnly" placeholder="只处理指定番号或文件夹（留空 = 全部）" spellcheck="false"><input id="javLimit" type="number" min="0" placeholder="数量上限" style="width:100px"></div>
+      <div class="row"><label class="muted">封面</label><select id="qImgPolicy"><option value="keep">仅补缺失</option><option value="smart">覆盖本工具写的</option><option value="replace">总是覆盖</option></select><label class="ck"><input type="checkbox" id="javForce">覆盖 NFO</label><label class="ck"><input type="checkbox" id="javForceImages">覆盖图片</label><label class="ck"><input type="checkbox" id="javNoImages">不下封面</label><label class="ck"><input type="checkbox" id="javNoProbe">跳过时长</label></div>
+      <div class="row"><label class="ck"><input type="checkbox" id="javRecursive" checked>递归子目录</label><button class="btn" id="ovRetranslate">只补译 NFO</button><button class="btn" id="ovActors">演员整理</button><button class="btn" data-clean="dry">整理预览</button><span class="muted">不重新访问源站 / 不改视频</span></div>
+    </div></details>
   </div>
-  <div class="sp"></div>
-  <span id="srvInfo" class="badge"><span class="dot"></span>连接中…</span>
-  <button class="btn sm" id="themeBtn" title="切换深浅色">◐</button>
-</header>
-
-<div class="layout">
-
-  <main class="main">
-
-  <div class="notice-warn" role="alert">
-    ⚠️ <b>无 PT 目录保护</b>：刮削会直接在视频所在目录写入 NFO / 封面（含做种目录），不再跳过、不再只读；只新增文件，不改动视频本身。
+  <div class="card">
+    <h2>当前任务</h2>
+    <div class="row"><b id="jobTitle" style="font-size:12.5px">未选择任务</b><span id="jobBadge" class="badge"><span class="dot"></span>空闲</span><div style="flex:1"></div><label class="ck"><input type="checkbox" id="follow" checked>自动滚动</label><button class="btn sm" id="download">下载日志</button><button class="btn sm" id="clearLog">清屏</button><button class="btn sm danger" id="stop" disabled>停止</button></div>
+    <div class="list" id="jobList" style="margin-bottom:8px"><div class="empty">暂无任务</div></div>
+    <div class="log" id="log">（选择任务后显示输出）</div>
   </div>
+  <div class="card"><h2>最近完成</h2><div class="list" id="ovHistory"><div class="empty">暂无任务</div></div></div>
+</section>
 
-  <!-- ================= 概览 ================= -->
-  <section class="view on" id="v-overview">
-    <div class="stats">
-      <div class="stat"><div class="k">服务版本</div><div class="v sm" id="ovVersion">–</div></div>
-      <div class="stat"><div class="k">当前状态</div><div class="v sm"><span id="ovState" class="badge"><span class="dot"></span>空闲</span></div></div>
-      <div class="stat"><div class="k">刮削输出</div><div class="v sm"><span id="ovPt" class="badge ok"><span class="dot"></span>写入文件夹</span></div></div>
-      <div class="stat"><div class="k">运行环境</div><div class="v sm" id="ovDeps">–</div></div>
-    </div>
-
-    <div class="card">
-      <h2>快速开始</h2>
-      <div class="desc">选择媒体文件夹 → 抓取元数据 → 输出 NFO 与封面。不修改、移动、重命名原视频，不改动视频哈希。</div>
-      <div class="row">
-        <input class="grow" id="root" placeholder="媒体目录，如 /vol1/1000/Media" spellcheck="false">
-        <button class="btn" id="browse">选择目录</button>
-        <button class="btn" id="saveRoot">设为默认</button>
-      </div>
-      <div class="row" id="rootChips"></div>
-      <div class="row">
-        <label class="muted">封面</label>
-        <select id="qImgPolicy">
-          <option value="keep">仅补缺失（不动已有）</option>
-          <option value="smart">覆盖本工具写的</option>
-          <option value="replace">总是覆盖</option>
-        </select>
-        <label class="ck"><input type="checkbox" id="qForceImages">重新下载封面</label>
-        <label class="ck"><input type="checkbox" id="qForceNfo">重写 NFO</label>
-      </div>
-      <div class="row">
-        <button class="btn primary" data-quick="jav">开始刮削</button>
-        <button class="btn" data-quick="scan">扫描媒体文件夹</button>
-        <button class="btn" data-quick="check">媒体体检</button>
-      </div>
-    </div>
-
-  </section>
-
-
-  <!-- ================= 设置 ================= -->
-  <section class="view" id="v-settings">
-    <div class="card">
-      <h2>对接飞牛影视</h2>
-      <div class="desc">刮削元数据始终就地写入视频文件夹（NFO/封面）。开启对接后，额外推送一份到飞牛媒体库；未配置地址时自动跳过推送，不影响刮削。</div>
-      <div class="row">
-        <label class="sw"><input type="checkbox" id="fnosOn" checked><i></i></label>
-        <b style="font-size:13.5px">对接飞牛影视（附加推送）</b>
-        <span class="muted" id="fnosState"></span>
-      </div>
-      <div class="row">
-        <input class="grow" id="fnosUrl" placeholder="飞牛地址，如 http://127.0.0.1:5666" spellcheck="false">
-      </div>
-      <div class="row">
-        <input class="grow" id="fnosToken" type="password" placeholder="访问令牌（已配置时留空表示不修改）" autocomplete="off" spellcheck="false">
-        <button class="btn sm" id="fnosPeek">显示</button>
-        <span class="muted" id="fnosTokenState"></span>
-      </div>
-      <details class="fold">
-        <summary>高级</summary>
-        <div class="body">
-          <div class="row">
-            <label class="sw"><input type="checkbox" id="fnosExport"><i></i></label>
-            <b style="font-size:13.5px">额外导出 NFO 到独立目录</b>
-          </div>
-          <div class="row">
-            <input class="grow" id="fnosMetaDir" placeholder="独立元数据目录（导出时必填）" spellcheck="false">
-            <button class="btn" id="fnosMetaBrowse">选择目录</button>
-          </div>
-        </div>
-      </details>
-      <div class="row"><button class="btn primary" id="saveFnos">保存</button></div>
-    </div>
-
-    <div class="card">
-      <h2>刮削设置</h2>
-      <div class="desc">默认媒体目录与网络中转。</div>
-      <div class="row">
-        <input class="grow" id="cfgRoot" placeholder="默认媒体目录" spellcheck="false">
-        <button class="btn" id="cfgBrowse">选择目录</button>
-      </div>
-      <details class="fold" id="advFold">
-        <summary>高级设置</summary>
-        <div class="body">
-          <div class="row">
-            <input class="grow" id="cfgGateway" placeholder="中转网关地址（留空 = 直连）" spellcheck="false">
-          </div>
-          <div class="row">
-            <input class="grow" id="cfgAuthKey" type="password" placeholder="鉴权密钥（已配置时留空 = 不修改）" autocomplete="off" spellcheck="false">
-            <button class="btn sm" id="authPeek">显示</button>
-            <span class="muted" id="authState"></span>
-          </div>
-          <div class="row">
-            <label class="muted" style="width:80px">源并发</label>
-            <input id="cfgConcurrency" type="number" min="1" max="8" style="width:100px">
-            <label class="muted" style="width:80px">条目并发</label>
-            <input id="cfgJobs" type="number" min="1" max="8" style="width:100px">
-            <label class="muted" style="width:90px">超时（秒）</label>
-            <input id="cfgTimeout" type="number" min="5" max="120" style="width:100px">
-            <label class="muted" style="width:90px">重试次数</label>
-            <input id="cfgRetries" type="number" min="0" max="5" style="width:100px">
-
-          </div>
-          <div class="muted">源并发：单条记录同时向几个源/镜像发请求（默认 3）。条目并发：同时处理几个视频，直连可设 2~4，过高可能触发站点限流（默认 2）。超时与重试作用于单个请求。</div>
-        </div>
-      </details>
-
-      <div class="row" style="margin-top:16px">
-        <button class="btn primary" id="saveCfg">保存设置</button>
-        <span class="muted" id="pathInfo"></span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>自动刮削</h2>
-      <div class="desc">定时扫描媒体文件夹自动刮削，可联动 qBittorrent 下载完成触发。</div>
-      <div class="row">
-        <label class="sw"><input type="checkbox" id="autoOn"><i></i></label>
-        <b style="font-size:13.5px">启用自动刮削</b>
-        <span class="badge" id="autoState"><span class="dot"></span>未启用</span>
-      </div>
-      <div class="row">
-        <label class="ck"><input type="checkbox" id="autoScan" checked>定时扫描</label>
-        <label class="muted">间隔（分钟）</label>
-        <input id="autoScanMin" type="number" min="1" style="width:90px">
-        <label class="muted">静置（分钟）</label>
-        <input id="autoSettle" type="number" min="0" style="width:90px">
-      </div>
-      <div class="row">
-        <label class="ck"><input type="checkbox" id="autoQbit">qBittorrent 联动</label>
-        <input class="grow" id="qbitUrl" placeholder="http://127.0.0.1:8085" spellcheck="false">
-        <input id="qbitUser" placeholder="用户名" style="width:110px" spellcheck="false">
-        <input id="qbitPass" type="password" placeholder="密码" style="width:110px" autocomplete="off">
-        <label class="muted">轮询（秒）</label>
-        <input id="qbitPoll" type="number" min="10" style="width:90px">
-      </div>
-      <div class="row">
-        <label class="ck"><input type="checkbox" id="autoNoImg">不下封面</label>
-      </div>
-      <div class="row"><button class="btn primary" id="saveAuto">保存自动刮削</button></div>
-    </div>
-
-    <div class="card">
-      <div class="muted" style="line-height:1.9;font-size:12px">
-        撷引 <b id="abVersion">–</b> · 只新增 nfo / 封面，不改动视频文件 ·
-        <a href="https://github.com/puermilk/xieyin" target="_blank" rel="noreferrer">GitHub</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= 任务管理 ================= -->
-  <section class="view" id="v-jobs">
-    <div class="card">
-      <h2>番号刮削</h2>
-      <div class="desc">扫描媒体文件夹，按番号抓取元数据。多源竞速（jav321 / javdb580），快源先写、慢源补字段；输出 NFO 与封面。</div>
-      <div class="row">
-        <input class="grow" id="javOnly" placeholder="指定番号或文件夹名（留空 = 全部）" spellcheck="false">
-        <input id="javLimit" type="number" min="0" placeholder="数量上限" style="width:110px">
-      </div>
-      <div class="row">
-        <label class="ck"><input type="checkbox" id="javRecursive" checked>递归子目录</label>
-        <label class="ck"><input type="checkbox" id="javForce">覆盖已有 NFO</label>
-        <label class="ck"><input type="checkbox" id="javForceImages">覆盖已有图片</label>
-        <label class="ck"><input type="checkbox" id="javNoImages">不下封面</label>
-        <label class="ck"><input type="checkbox" id="javNoProbe">跳过时长探测</label>
-      </div>
-      <div class="row">
-        <button class="btn primary" data-jav="run">开始刮削</button>
-        <button class="btn" data-jav="dry">试运行</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>电影刮削</h2>
-      <div class="desc">按文件夹名 / 关键词 / TMDB ID 抓取电影元数据（TMDB 网页源，直连）。</div>
-      <div class="row">
-        <input class="grow" id="tmdbFolder" placeholder="指定文件夹（留空 = 默认目录）" spellcheck="false">
-        <button class="btn" id="browseTmdb">选择目录</button>
-      </div>
-      <div class="row">
-        <input class="grow" id="tmdbQuery" placeholder="搜索关键词（片名认不出时手动填）" spellcheck="false">
-        <input id="tmdbId" placeholder="TMDB ID（最准）" style="width:150px" spellcheck="false">
-      </div>
-      <div class="row">
-        <label class="ck"><input type="checkbox" id="tmdbForce">覆盖已有 NFO</label>
-        <label class="ck"><input type="checkbox" id="tmdbNoImages">不下海报</label>
-        <label class="ck"><input type="checkbox" id="tmdbNoProbe">跳过时长探测</label>
-      </div>
-      <div class="row">
-        <button class="btn primary" data-tmdb="run">开始刮削</button>
-        <button class="btn" data-tmdb="dry">试运行</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>文件整理</h2>
-      <div class="desc" id="cleanDesc">清理媒体文件夹中的冗余文件。</div>
-      <div id="cleanPtWarn" class="errbox">
-        整理会删除、移动、重命名文件，删除后不可恢复。检测到做种标记（@GROUP / *.torrent）的目录会自动跳过。
-      </div>
-      <div class="row">
-        <button class="btn" data-clean="dry">预览整理</button>
-        <button class="btn danger" id="cleanRun" data-clean="run">执行整理</button>
-        <button class="btn" id="check">媒体体检</button>
-        <button class="btn" id="net">网络自检</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>任务与实时输出</h2>
-      <div class="desc">
-        状态：<span class="tag">空闲</span><span class="tag">排队中</span><span class="tag">刮削中</span><span class="tag">成功</span><span class="tag">失败</span>
-      </div>
-      <div class="list" id="jobList"><div class="empty">暂无任务</div></div>
-      <div class="hr"></div>
-      <div class="row">
-        <b id="jobTitle" style="font-size:13.5px">未选择任务</b>
-        <span id="jobBadge" class="badge"><span class="dot"></span>空闲</span>
-        <div style="flex:1"></div>
-        <label class="ck"><input type="checkbox" id="follow" checked>自动滚动</label>
-        <button class="btn sm" id="download">下载日志</button>
-        <button class="btn sm" id="clearLog">清屏</button>
-        <button class="btn sm danger" id="stop" disabled>停止任务</button>
-      </div>
-      <div class="log" id="log">（选择任务后显示输出）</div>
-    </div>
-  </section>
-
-  <!-- ================= 日志 ================= -->
-  <section class="view" id="v-logs">
-    <div class="card">
-      <h2>运行日志</h2>
-      <div class="desc">
-        级别：<span class="tag">INFO</span><span class="tag">WARN</span><span class="tag">ERROR</span>
-        <span class="tag">E001 连接失败</span><span class="tag">E002 解析失败</span><span class="tag">E003 写入/保护拦截</span><span class="tag">E004 配置/参数</span>
-      </div>
-      <div class="row">
-        <select id="logTask"><option value="">全部任务</option></select>
-        <label class="ck"><input type="checkbox" id="lvInfo" checked>INFO</label>
-        <label class="ck"><input type="checkbox" id="lvWarn" checked>WARN</label>
-        <label class="ck"><input type="checkbox" id="lvErr" checked>ERROR</label>
-        <div style="flex:1"></div>
-        <button class="btn sm" id="logRefresh">刷新</button>
-      </div>
-      <div class="log" id="bigLog">（暂无日志，先在任务管理里运行任务）</div>
-    </div>
-  </section>
-
-
-  </main>
-</div>
-
-<footer>
-  免责声明：本插件为独立第三方开发，与字节跳动、豆包（Doubao）及飞牛（fnOS）官方无任何关联、授权或背书关系。<br>
-  本工具仅抓取公开元数据信息（NFO / 封面），不提供、不存储、不索引任何影视内容与片源。使用者应自行遵守当地法律法规与站点服务条款。
-</footer>
-
-<!-- 弹窗：目录选择 -->
-<div class="mask hidden" id="browseModal">
-  <div class="modal">
-    <h3>选择目录</h3>
-    <div class="row"><button class="btn sm" id="browseUp">↑ 上级</button><span class="muted" id="browsePath" style="word-break:break-all">/</span></div>
-    <div class="list" id="dirList" style="max-height:44vh; overflow:auto"></div>
-    <div class="acts">
-      <button class="btn" data-close>取消</button>
-      <button class="btn primary" id="browsePick">选择当前目录</button>
-    </div>
+<section class="view" id="v-translate">
+  <div class="page-head"><h1>翻译</h1><p>标题像海报，简介像预告</p></div>
+  <div class="card">
+    <h2>翻译设置</h2>
+    <div class="row"><label class="muted" style="width:64px">预设</label><select id="cfgPreset" class="grow"><option value="local-glm">本地 GLM-5.3-Flash（推荐）</option><option value="local-ds">本地 DeepSeek-V4-Pro（更稳）</option><option value="opencode">OpenCode Go DeepSeek V4 Pro</option><option value="bing">Bing 免费直译</option><option value="custom">自定义</option></select><button class="btn sm" id="llmRecommend">使用推荐</button></div>
+    <div class="muted">GLM-5.3-Flash 快；关系复杂、长标题用 DeepSeek-V4-Pro。默认 1600 tokens / 0.7。推荐部署 <a href="https://github.com/aimod-cc/agent2api" target="_blank" rel="noreferrer">Agent2API</a>（本机 3065 /v1）。</div>
+    <div class="row"><label class="ck"><input type="checkbox" id="cfgPlotZh">日文标题/简介翻译成中文</label><label class="muted">方式</label><select id="cfgTranslateProvider" style="width:190px"><option value="auto">自动（短句 Bing / 长句 LLM）</option><option value="bing">只用 Bing</option><option value="llm">只用 LLM</option></select><input id="cfgTranslateModel" placeholder="LLM 模型" style="width:190px" spellcheck="false"></div>
+    <div class="muted">标题 18~45 字；简介 140~220 字。简介过短、残留日文或拒答会重试一次，仍不合格才回退中文标题。</div>
+    <details class="fold"><summary>接口与高级参数</summary><div class="body">
+      <div class="row"><label class="muted" style="width:64px">接口地址</label><input id="cfgTranslateBase" class="grow" placeholder="http://127.0.0.1:3065/v1" spellcheck="false"></div>
+      <div class="row"><label class="muted" style="width:64px">API Key</label><input id="cfgTranslateKey" type="password" class="grow" placeholder="留空 = 不修改" autocomplete="off" spellcheck="false"><span class="muted" id="translateKeyState"></span></div>
+      <div class="row"><label class="muted" style="width:88px">max_tokens</label><input id="cfgTranslateMaxTokens" type="number" min="128" max="8192" style="width:100px"><label class="muted" style="width:88px">temperature</label><input id="cfgTranslateTemp" type="number" min="0" max="2" step="0.1" style="width:100px"></div>
+    </div></details>
+    <div class="row"><span class="muted">缓存 <b id="tcacheCount">–</b> 条</span><button class="btn sm" id="tcacheClear">清除缓存</button><button class="btn primary" id="saveTranslate">保存翻译设置</button></div>
+    <div class="hr"></div>
+    <div class="row"><b style="font-size:12.5px">测试 LLM</b><span class="muted">用当前保存的配置试一条，不改任何 NFO</span></div>
+    <div class="row"><input class="grow" id="llmTestTitle" value="義父に10秒だけの約束で挿入を許したら…相性抜群過ぎて絶頂してしまった私。" spellcheck="false"><button class="btn" id="llmTest">测试</button></div>
+    <div id="llmTestResult" class="testout muted"></div>
+    <div class="hr"></div>
+    <div class="row"><b style="font-size:12.5px">现有 NFO 重译</b><span class="muted">只读 originaltitle/originalplot，不访问源站</span></div>
+    <div class="row"><button class="btn" id="retranslatePreview">预览</button><button class="btn primary" id="retranslateFill">补缺重译</button><button class="btn" id="retranslateWrite">全部重译</button></div>
+    <div class="muted">补缺：只处理标题/简介缺失、正文过短、残留日文、拒答或元数据泄漏的 NFO；已完整的直接跳过。</div>
   </div>
-</div>
+</section>
 
-<!-- 弹窗：高危确认（统一） -->
-<div class="mask hidden" id="riskModal">
-  <div class="modal">
-    <h3 id="riskTitle">高危操作确认</h3>
-    <div id="riskBody" class="errbox"></div>
-    <div class="row">
-      <input class="grow" id="riskInput" placeholder="输入 CLEAN 确认执行" autocomplete="off" spellcheck="false">
-    </div>
-    <div class="acts">
-      <button class="btn" data-close>取消</button>
-      <button class="btn danger" id="riskGo" disabled>确认执行</button>
-    </div>
+<section class="view" id="v-tools">
+  <div class="page-head"><h1>工具</h1><p>演员、复制归档、文件整理</p></div>
+  <div class="row"><span class="muted" id="toolRootLabel">当前目录：未选择</span><button class="btn sm" id="toolRootGo">去工作台选目录</button></div>
+  <div class="card">
+    <h2>演员整理</h2>
+    <div class="desc">规范化飞牛 person 名称，合并重名，清理脏人物与推荐位关联，补头像并回写 NFO。</div>
+    <div class="row"><button class="btn" id="actorsPreview">预览</button><button class="btn primary" id="actorsWrite">执行整理</button></div>
+    <div class="muted">执行前请备份 trimmedia.db。</div>
   </div>
-</div>
+  <div class="card">
+    <h2>电影刮削</h2>
+    <details class="fold"><summary>展开电影刮削</summary><div class="body">
+      <div class="row"><input class="grow" id="tmdbFolder" placeholder="指定文件夹（留空 = 默认目录）" spellcheck="false"><button class="btn" id="browseTmdb">选择目录</button></div>
+      <div class="row"><input class="grow" id="tmdbQuery" placeholder="搜索关键词" spellcheck="false"><input id="tmdbId" placeholder="TMDB ID" style="width:140px" spellcheck="false"></div>
+      <div class="row"><label class="ck"><input type="checkbox" id="tmdbForce">覆盖 NFO</label><label class="ck"><input type="checkbox" id="tmdbNoImages">不下海报</label><label class="ck"><input type="checkbox" id="tmdbNoProbe">跳过时长</label></div>
+      <div class="row"><button class="btn primary" data-tmdb="run">开始刮削</button><button class="btn" data-tmdb="dry">试运行</button></div>
+    </div></details>
+  </div>
+  <div class="card">
+    <h2>按番号复制</h2>
+    <div class="row"><label class="ck"><input type="checkbox" id="cfgCopyEnabled">刮削后复制到</label><input class="grow" id="cfgCopyRoot" placeholder="/vol1/1000/整理输出" spellcheck="false"><button class="btn" id="saveCopy">保存</button></div>
+    <div class="muted">每个视频复制到 &lt;目标&gt;/&lt;番号&gt;/，包含视频、NFO、封面、演员图；只复制，不改原文件。</div>
+  </div>
+  <div class="card">
+    <h2>文件整理</h2>
+    <div class="desc" id="cleanDesc">每个影片文件夹只保留最大的视频；删除广告视频、网页/广告 txt、被删视频留下的孤儿 NFO/图片，并去掉文件名里的域名前缀。</div>
+    <div class="row"><span class="badge run">目录</span><input class="grow" id="cleanRoot" placeholder="要整理的文件夹，如 /vol1/1000/Media" spellcheck="false"><button class="btn" id="cleanBrowse">选择文件夹</button><button class="btn" id="cleanUseRoot">用当前目录</button></div>
+    <div class="muted">留空 = 使用工作台当前目录。指定后只整理这个文件夹，不动其它目录。</div>
+    <div id="cleanPtWarn" class="errbox">整理会删除、移动、重命名文件，不可恢复。做种目录会自动跳过；没有主视频的目录整目录跳过，避免误删小体积正片。</div>
+    <div class="row"><button class="btn" data-clean="dry">预览</button><button class="btn danger" id="cleanRun" data-clean="run">执行整理</button><button class="btn" id="check">体检</button><button class="btn" id="net">网络自检</button></div>
+  </div>
+</section>
 
+<section class="view" id="v-settings">
+  <div class="page-head"><h1>设置</h1><p>媒体、网络、飞牛、自动刮削</p></div>
+  <div class="card">
+    <h2>媒体目录</h2>
+    <div class="row"><input class="grow" id="cfgRoot" placeholder="默认媒体目录" spellcheck="false"><button class="btn" id="cfgBrowse">选择目录</button><button class="btn primary" id="saveCfg">保存设置</button></div>
+    <div class="muted" id="pathInfo"></div>
+  </div>
+  <details class="fold"><summary>网络与高级参数</summary><div class="body">
+    <div class="row"><input class="grow" id="cfgGateway" placeholder="中转网关（留空 = 直连）" spellcheck="false"></div>
+    <div class="row"><input class="grow" id="cfgAuthKey" type="password" placeholder="鉴权密钥（留空 = 不修改）" autocomplete="off" spellcheck="false"><button class="btn sm" id="authPeek">显示</button><span class="muted" id="authState"></span></div>
+    <div class="row"><label class="muted" style="width:72px">源并发</label><input id="cfgConcurrency" type="number" min="1" max="8" style="width:80px"><label class="muted" style="width:72px">条目并发</label><input id="cfgJobs" type="number" min="1" max="8" style="width:80px"><label class="muted" style="width:72px">超时秒</label><input id="cfgTimeout" type="number" min="5" max="120" style="width:80px"><label class="muted" style="width:60px">重试</label><input id="cfgRetries" type="number" min="0" max="5" style="width:70px"></div>
+    <div class="row"><button class="btn primary" id="saveCfg2">保存设置</button></div>
+  </div></details>
+  <details class="fold"><summary>飞牛影视</summary><div class="body">
+    <div class="row"><label class="sw"><input type="checkbox" id="fnosOn" checked><i></i></label><b style="font-size:12.5px">对接飞牛影视</b><span class="muted" id="fnosState"></span></div>
+    <div class="row"><label class="ck"><input type="checkbox" id="fnosSyncMeta" checked>同步标题/简介到飞牛</label><span class="muted">走本机飞牛接口，自动读取管理员令牌；不需要 URL/令牌</span></div>
+    <div class="row"><input class="grow" id="fnosUrl" placeholder="旧版推送地址（可留空）" spellcheck="false"></div>
+    <div class="row"><input class="grow" id="fnosToken" type="password" placeholder="旧版推送令牌（可留空）" autocomplete="off" spellcheck="false"><button class="btn sm" id="fnosPeek">显示</button><span class="muted" id="fnosTokenState"></span></div>
+    <div class="row"><label class="sw"><input type="checkbox" id="fnosExport"><i></i></label><input class="grow" id="fnosMetaDir" placeholder="独立元数据目录" spellcheck="false"><button class="btn" id="fnosMetaBrowse">选择目录</button></div>
+    <div class="row"><button class="btn primary" id="saveFnos">保存飞牛设置</button></div>
+  </div></details>
+  <details class="fold"><summary>自动刮削</summary><div class="body">
+    <div class="row"><label class="sw"><input type="checkbox" id="autoOn"><i></i></label><b style="font-size:12.5px">启用自动刮削</b><span class="badge" id="autoState"><span class="dot"></span>未启用</span></div>
+    <div class="row"><label class="ck"><input type="checkbox" id="autoPlotZh" checked>标题/简介翻译</label><label class="ck"><input type="checkbox" id="autoActorSync">演员整理（补头像 / 回写 NFO）</label><label class="ck"><input type="checkbox" id="autoFnosSync" checked>刮削后同步到飞牛影视</label></div>
+    <div class="row"><label class="ck"><input type="checkbox" id="autoClean">刮削前自动清理（广告 / 孤儿文件 / 去域名前缀）</label><span class="muted">只清理本次下载目录，不动主视频</span></div>
+    <div class="row"><label class="ck"><input type="checkbox" id="autoScan" checked>定时扫描</label><label class="muted">间隔分钟</label><input id="autoScanMin" type="number" min="1" style="width:80px"><label class="muted">静置分钟</label><input id="autoSettle" type="number" min="0" style="width:80px"></div>
+    <div class="row"><label class="muted" style="width:84px">扫描目录</label><input class="grow" id="autoScanRoot" placeholder="留空 = 默认媒体目录" spellcheck="false"><button class="btn" id="autoScanBrowse">选择目录</button></div>
+    <div class="row"><label class="sw"><input type="checkbox" id="autoFnosDl"><i></i></label><b style="font-size:12.5px">监听飞牛下载中心</b><input class="grow" id="autoFnosDb" placeholder="/usr/trim/var/downloadcenter/downloadcenter.db" spellcheck="false"><label class="muted">轮询秒</label><input id="autoFnosPoll" type="number" min="10" style="width:80px"></div>
+    <div class="row"><label class="ck"><input type="checkbox" id="autoQbit">qBittorrent 联动</label><input class="grow" id="qbitUrl" placeholder="http://127.0.0.1:8085" spellcheck="false"><input id="qbitUser" placeholder="用户名" style="width:110px" spellcheck="false"><input id="qbitPass" type="password" placeholder="密码" style="width:110px" autocomplete="off" spellcheck="false"><label class="muted">轮询秒</label><input id="qbitPoll" type="number" min="10" style="width:80px"></div>
+    <div class="row"><label class="muted">封面</label><select id="autoImgPolicy"><option value="keep">仅补缺失</option><option value="smart">覆盖本工具写的</option><option value="replace">总是覆盖</option></select><label class="ck"><input type="checkbox" id="autoForceNfo">覆盖 NFO</label><label class="ck"><input type="checkbox" id="autoForceImages">覆盖图片</label><label class="ck"><input type="checkbox" id="autoNoProbe">跳过时长</label><label class="ck"><input type="checkbox" id="autoNoImg">不下封面</label></div>
+    <div class="row"><button class="btn primary" id="saveAuto">保存自动刮削</button><span class="muted">自动任务使用与工作台相同的刮削/翻译/复制配置</span></div>
+  </div></details>
+  <footer>撷引 <b id="abVersion">–</b> · 只新增 NFO / 图片，不改动视频文件 · <a href="https://github.com/puermilk/xieyin" target="_blank" rel="noreferrer">GitHub</a></footer>
+</section>
+
+<section class="view" id="v-logs"><div class="page-head"><h1>日志</h1></div><div class="card"><div class="row"><select id="logTask"><option value="">全部任务</option></select><label class="ck"><input type="checkbox" id="lvInfo" checked>INFO</label><label class="ck"><input type="checkbox" id="lvWarn" checked>WARN</label><label class="ck"><input type="checkbox" id="lvErr" checked>ERROR</label><div style="flex:1"></div><button class="btn sm" id="logRefresh">刷新</button></div><div class="log" id="bigLog">（暂无日志）</div></div></section>
+
+</main></div>
+<div class="mask hidden" id="browseModal"><div class="modal"><h3>选择目录</h3><div class="row"><button class="btn sm" id="browseUp">上级</button><span class="muted" id="browsePath" style="word-break:break-all">/</span></div><div class="list" id="dirList" style="max-height:44vh;overflow:auto"></div><div class="acts"><button class="btn" data-close>取消</button><button class="btn primary" id="browsePick">选择当前目录</button></div></div></div>
+<div class="mask hidden" id="riskModal"><div class="modal"><h3 id="riskTitle">高危操作确认</h3><div id="riskBody" class="errbox"></div><div class="row"><input class="grow" id="riskInput" placeholder="输入 CLEAN 确认" autocomplete="off" spellcheck="false"></div><div class="acts"><button class="btn" data-close>取消</button><button class="btn danger" id="riskGo" disabled>确认执行</button></div></div></div>
 <div id="toast"></div>
-
 <script>
+
+
 "use strict";
 /* ==================== 数据层 ==================== */
 var S = {
   status: null, jobs: [], curJob: null, offset: 0,
   timer: null, browsePath: "/", browseTarget: "root",
-  riskAction: null, logLines: []
+  riskAction: null, logLines: [], translateEditing: false, quickEditing: false
 };
 function $(id){ return document.getElementById(id); }
 function $$(sel){ return Array.prototype.slice.call(document.querySelectorAll(sel)); }
@@ -606,6 +286,7 @@ function loadStatus(){
     renderHistory();
     renderRoots();
     if (d.auto) fillAuto(d.auto);
+    loadTcache();
   }).catch(function(){
     $("srvInfo").innerHTML = '<span class="dot"></span>服务不可达';
   });
@@ -639,8 +320,12 @@ function renderRoots(){
     return '<button class="btn sm" data-root="' + esc(r.path) + '">' + esc(r.path) + "</button>";
   }).join("");
   $$("[data-root]", box).forEach(function(el){
-    el.onclick = function(){ $("root").value = el.dataset.root; };
+    el.onclick = function(){ $("root").value = el.dataset.root; syncRootLabel(); };
   });
+}
+function syncRootLabel(){
+  var v = $("root").value.trim() || ($("cfgRoot") ? $("cfgRoot").value.trim() : "");
+  if ($("toolRootLabel")) $("toolRootLabel").textContent = "当前目录：" + (v || "未选择");
 }
 function fmt(ts){
   if (!ts) return "";
@@ -695,17 +380,6 @@ $$("[data-jav]").forEach(function(b){
 $$("[data-tmdb]").forEach(function(b){
   b.onclick = function(){ startJob(tmdbPayload(b.dataset.tmdb === "dry")); };
 });
-function quickJavPayload(){
-  return {
-    kind:"jav", dry:false,
-    root: $("root").value.trim(),
-    recursive: true,
-    force: $("qForceNfo").checked,
-    force_images: $("qForceImages").checked,
-    image_policy: $("qImgPolicy").value,
-    via:"auto", proxy: $("cfgGateway").value.trim()
-  };
-}
 
 $$("[data-quick]").forEach(function(b){
   b.onclick = function(){
@@ -717,19 +391,24 @@ $$("[data-quick]").forEach(function(b){
 });
 
 /* ---- 文件整理（高危二次确认） ---- */
+function cleanJobRoot(){
+  return ($("cleanRoot").value.trim() || $("root").value.trim());
+}
 $$("[data-clean]").forEach(function(b){
   b.onclick = function(){
     var mode = b.dataset.clean === "dry" ? "dry" : "run";
     if (!b.dataset.clean) return;
+    var root = cleanJobRoot();
+    if (!root) { toast("先选择要整理的文件夹", true); return; }
     if (mode === "dry"){
-      return startJob({kind:"clean", mode:"dry", root:$("root").value.trim(), pt_guard:true});
+      return startJob({kind:"clean", mode:"dry", root:root, pt_guard:true});
     }
     openRisk("确认执行整理",
-      "将删除、移动、重命名文件，删除后不可恢复。带 @GROUP 做种文件的目录会自动跳过。",
+      "将整理：" + root + "\n会删除、移动、重命名文件，删除后不可恢复。带 @GROUP 做种文件的目录会自动跳过。",
       function(){
-        startJob({kind:"clean", mode:"run", root:$("root").value.trim(),
+        startJob({kind:"clean", mode:"run", root:root,
                   pt_guard:true, confirm:"CLEAN"});
-      });
+      }, "CLEAN");
   };
 });
 $("check").onclick = function(){ startJob({kind:"check", root:$("root").value.trim()}); };
@@ -781,10 +460,8 @@ function stopPoll(){
 }
 $("stop").onclick = function(){
   if (!S.curJob) return;
-  openRisk("停止当前任务", "确定停止任务？任务将被中断。", function(){
-    api("/api/jobs/" + encodeURIComponent(S.curJob.id) + "/stop", {method:"POST", body:"{}"})
-      .then(function(){ toast("已发送停止信号"); }).catch(function(e){ toast(e.message, true); });
-  }, "STOP");
+  api("/api/jobs/" + encodeURIComponent(S.curJob.id) + "/stop", {method:"POST", body:"{}"})
+    .then(function(){ toast("已发送停止信号"); }).catch(function(e){ toast(e.message, true); });
 };
 $("clearLog").onclick = function(){ $("log").innerHTML = ""; S.logLines = []; };
 $("download").onclick = function(){
@@ -796,14 +473,15 @@ function openRisk(title, body, onOk, word){
   $("riskTitle").textContent = title;
   $("riskBody").textContent = body;
   $("riskInput").value = "";
-  $("riskInput").placeholder = "输入 " + (word || "CLEAN") + " 确认执行";
-  $("riskGo").disabled = true;
+  S.riskWord = word || "";
+  $("riskInput").placeholder = S.riskWord ? "输入 " + S.riskWord + " 确认执行" : "";
+  $("riskInput").style.display = S.riskWord ? "" : "none";
+  $("riskGo").disabled = !!S.riskWord;
   S.riskAction = onOk;
-  S.riskWord = word || "CLEAN";
   $("riskModal").classList.remove("hidden");
 }
 $("riskInput").oninput = function(e){
-  $("riskGo").disabled = e.target.value.trim() !== S.riskWord;
+  $("riskGo").disabled = S.riskWord ? (e.target.value.trim() !== S.riskWord) : false;
 };
 $("riskGo").onclick = function(){
   $("riskModal").classList.add("hidden");
@@ -826,6 +504,8 @@ function openBrowse(target){
     ? ($("tmdbFolder").value.trim() || $("root").value.trim())
     : target === "cfg" ? $("cfgRoot").value.trim()
     : target === "fnosMeta" ? ($("fnosMetaDir").value.trim() || $("root").value.trim())
+    : target === "autoScan" ? ($("autoScanRoot").value.trim() || $("root").value.trim())
+    : target === "clean" ? ($("cleanRoot").value.trim() || $("root").value.trim())
     : $("root").value.trim();
   loadBrowse(start || "/");
 }
@@ -848,21 +528,75 @@ function loadBrowse(path){
       if (S.browseTarget === "tmdb") $("tmdbFolder").value = d.path;
       else if (S.browseTarget === "cfg") $("cfgRoot").value = d.path;
       else if (S.browseTarget === "fnosMeta") $("fnosMetaDir").value = d.path;
+      else if (S.browseTarget === "autoScan") $("autoScanRoot").value = d.path;
+      else if (S.browseTarget === "clean") $("cleanRoot").value = d.path;
       else $("root").value = d.path;
+      syncRootLabel();
       $("browseModal").classList.add("hidden");
     };
     $("browseUp").onclick = function(){ loadBrowse(d.parent || "/"); };
   }).catch(function(e){ toast(e.message, true); });
 }
 $("browse").onclick = function(){ S.browseTarget = "root"; openBrowse("root"); };
+$("cleanBrowse").onclick = function(){ openBrowse("clean"); };
+$("cleanUseRoot").onclick = function(){ $("cleanRoot").value = $("root").value.trim(); };
 $("cfgBrowse").onclick = function(){ S.browseTarget = "cfg"; openBrowse("cfg"); };
+$("autoScanBrowse").onclick = function(){ S.browseTarget = "autoScan"; openBrowse("autoScan"); };
 $("browseTmdb").onclick = function(){ openBrowse("tmdb"); };
 $("saveRoot").onclick = function(){
-  api("/api/config", {method:"POST", body:JSON.stringify({media_root:$("root").value.trim()})})
-    .then(function(){ toast("已设为默认目录"); loadStatus(); }).catch(function(e){ toast(e.message, true); });
+  var root = $("root").value.trim();
+  api("/api/config", {method:"POST", body:JSON.stringify({media_root:root})})
+    .then(function(){ $("cfgRoot").value = root; toast("已设为默认目录"); loadStatus(); })
+    .catch(function(e){ toast(e.message, true); });
 };
 
 /* ==================== 设置（视图 ↔ 数据） ==================== */
+/* ==================== 翻译预设 ==================== */
+function defaultLlmBase(){
+  var h = location.hostname || "";
+  if (h === "localhost" || h === "127.0.0.1" || h === "::1" || h === "[::1]") {
+    return "http://127.0.0.1:3065/v1";
+  }
+  // 远程访问时，agent2api 也在这台机器的 3065；用当前访问域名，避免写死 localhost
+  return "http://" + h + ":3065/v1";
+}
+var TRANSLATE_PRESETS = {
+  "local-glm": {provider:"llm", base:defaultLlmBase(), model:"GLM-5.3-Flash", max:1600, temp:0.7},
+  "local-ds":  {provider:"llm", base:defaultLlmBase(), model:"DeepSeek-V4-Pro", max:1600, temp:0.7},
+  "opencode":  {provider:"llm", base:"https://opencode.ai/zen/go/v1", model:"deepseek-v4-pro", max:1600, temp:0.7},
+  "bing":      {provider:"bing", base:"", model:"", max:1600, temp:0.0}
+};
+function applyTranslatePreset(k){
+  var p = TRANSLATE_PRESETS[k];
+  if (!p) return;
+  $("cfgTranslateProvider").value = p.provider;
+  $("cfgTranslateBase").value = p.base;
+  $("cfgTranslateModel").value = p.model;
+  $("cfgTranslateMaxTokens").value = p.max;
+  $("cfgTranslateTemp").value = p.temp;
+}
+function presetKeyFor(provider, model){
+  if (provider === "bing") return "bing";
+  if (model === "GLM-5.3-Flash") return "local-glm";
+  if (model === "DeepSeek-V4-Pro") return "local-ds";
+  if (model === "deepseek-v4-pro") return "opencode";
+  return "custom";
+}
+function detectTranslatePreset(){
+  $("cfgPreset").value = presetKeyFor(
+    $("cfgTranslateProvider").value,
+    $("cfgTranslateModel").value.trim()
+  );
+}
+$("cfgPreset").onchange = function(){
+  if (this.value !== "custom") applyTranslatePreset(this.value);
+};
+["cfgTranslateBase","cfgTranslateModel","cfgTranslateProvider","cfgTranslateKey","cfgTranslateMaxTokens","cfgTranslateTemp"].forEach(function(id){
+  $(id).addEventListener("input", function(){ S.translateEditing = true; $("cfgPreset").value = "custom"; });
+  $(id).addEventListener("change", function(){ S.translateEditing = true; $("cfgPreset").value = "custom"; });
+});
+$("cfgPreset").addEventListener("change", function(){ S.translateEditing = true; });
+
 function fillSettings(){
   var d = S.status;
   if (!d) return;
@@ -873,25 +607,59 @@ function fillSettings(){
   $("cfgJobs").value = j.jobs || 2;
   $("cfgTimeout").value = j.timeout || 20;
   $("cfgRetries").value = j.retries == null ? 1 : j.retries;
+  $("cfgPlotZh").checked = !!j.plot_zh;
+  if (!S.translateEditing){
+    $("cfgTranslateProvider").value = j.translate_provider || "auto";
+    $("cfgTranslateModel").value = j.translate_model || "GLM-5.3-Flash";
+    $("cfgTranslateBase").value = j.translate_api_base || "";
+    $("cfgTranslateMaxTokens").value = j.translate_max_tokens || 1600;
+    $("cfgTranslateTemp").value = j.translate_temperature == null ? 0 : j.translate_temperature;
+    detectTranslatePreset();
+  }
+  $("translateKeyState").textContent = d.has_translate_key ? "Key 已配置" : "Key 未配置";
+  $("cfgCopyEnabled").checked = !!j.copy_enabled;
+  $("cfgCopyRoot").value = j.copy_root || "";
   $("qImgPolicy").value = j.image_policy || "keep";   // 图片策略已移到快速刮削
   $("authState").textContent = d.has_auth_key ? "已配置" : "未配置";
   var fn = d.fnos || {};
   $("fnosOn").checked = fn.enabled !== false;
+  $("fnosSyncMeta").checked = fn.sync_meta !== false;
   $("fnosUrl").value = fn.url || "";
   $("fnosExport").checked = !!fn.export_nfo;
   $("fnosMetaDir").value = fn.meta_dir || "";
   $("fnosTokenState").textContent = fn.has_token ? "已配置" : "未配置";
   syncFnosUI();
+  syncQuick(d);
+  syncRootLabel();
+  var syncMetaOn = (fn.sync_meta !== false) && fn.enabled !== false;
+  $("fnosHint").style.display = syncMetaOn ? "none" : "";
+  if (d.media_root && !$("root").value) $("root").value = d.media_root;
+  if (!$("cleanRoot").value.trim()) $("cleanRoot").value = $("root").value.trim();
+}
+function syncQuick(d){
+  if (S.quickEditing) return;
+  var j = (d && d.jav) || {};
+  $("quickPlotZh").checked = !!j.plot_zh;
+  $("quickActorSync").checked = !!j.actor_sync;
+  $("quickPreset").value = presetKeyFor(j.translate_provider || "auto", j.translate_model || "");
+  $("quickModel").textContent = j.translate_provider === "bing" ? "免费直译" : (j.translate_model || "");
+  $("quickCopyEnabled").checked = !!j.copy_enabled;
+  $("quickCopyRoot").value = j.copy_root || "";
+  $("quickCopyRoot").disabled = !j.copy_enabled;
+  $("quickPreset").disabled = !j.plot_zh;
 }
 function syncFnosUI(){
   var fnOn = $("fnosOn") ? $("fnosOn").checked : true;
   var expOn = $("fnosExport") ? $("fnosExport").checked : false;
+  var syncMeta = $("fnosSyncMeta") ? $("fnosSyncMeta").checked : true;
   var hasUrl = ($("fnosUrl") ? $("fnosUrl").value.trim() : "") !== "";
   if ($("fnosState")) $("fnosState").textContent =
-    ((fnOn && hasUrl) ? "就地写入 + 推送飞牛" : "就地写入") +
+    ((fnOn && syncMeta) ? "就地写入 + 同步飞牛" : "就地写入") +
+    ((fnOn && hasUrl) ? " + 旧版推送" : "") +
     (expOn ? " + 导出 NFO" : "");
 }
 $("fnosOn").addEventListener("change", syncFnosUI);
+$("fnosSyncMeta").addEventListener("change", syncFnosUI);
 $("fnosExport").addEventListener("change", syncFnosUI);
 $("fnosUrl").addEventListener("input", syncFnosUI);
 $("fnosPeek").onclick = function(){
@@ -903,20 +671,30 @@ $("authPeek").onclick = function(){
   var i = $("cfgAuthKey");
   i.type = i.type === "password" ? "text" : "password";
 };
-$("saveCfg").onclick = function(){
+function configPayload(){
   var auth = $("cfgAuthKey").value;
   var payload = {
-    media_root: $("cfgRoot").value.trim(),
+    media_root: $("cfgRoot").value.trim() || $("root").value.trim(),
     proxy: $("cfgGateway").value.trim(),
     jav: {
       concurrency: parseInt($("cfgConcurrency").value || "3", 10),
       jobs: parseInt($("cfgJobs").value || "2", 10),
       timeout: parseInt($("cfgTimeout").value || "20", 10),
       retries: parseInt($("cfgRetries").value || "1", 10),
+      plot_zh: $("cfgPlotZh").checked,
+      translate_provider: $("cfgTranslateProvider").value || "auto",
+      translate_model: $("cfgTranslateModel").value.trim() || "GLM-5.3-Flash",
+      translate_api_base: $("cfgTranslateBase").value.trim(),
+      translate_max_tokens: parseInt($("cfgTranslateMaxTokens").value || "1600", 10),
+      translate_temperature: parseFloat($("cfgTranslateTemp").value || "0"),
+      copy_enabled: $("cfgCopyEnabled").checked,
+      copy_root: $("cfgCopyRoot").value.trim(),
       image_policy: $("qImgPolicy").value || "keep"
     },
+    translate_api_key: $("cfgTranslateKey").value,
     fnos: {
       enabled: $("fnosOn").checked,
+      sync_meta: $("fnosSyncMeta").checked,
       url: $("fnosUrl").value.trim(),
       token: $("fnosToken").value,
       export_nfo: $("fnosExport").checked,
@@ -924,14 +702,85 @@ $("saveCfg").onclick = function(){
     }
   };
   if (auth) payload.auth_key = auth;
-  api("/api/config", {method:"POST", body:JSON.stringify(payload)})
-    .then(function(){
-      toast("设置已保存");
-      $("cfgAuthKey").value = "";
-      $("fnosToken").value = "";
-      loadStatus().then(fillSettings);
-    }).catch(function(e){ toast(e.message, true); });
+  return payload;
+}
+function saveConfig(payload){
+  return api("/api/config", {method:"POST", body:JSON.stringify(payload)}).then(function(){
+    S.translateEditing = false;
+    $("cfgAuthKey").value = "";
+    $("fnosToken").value = "";
+    if (!$("root").value.trim() && payload.media_root) $("root").value = payload.media_root;
+    return loadStatus().then(fillSettings);
+  });
+}
+$("saveCfg").onclick = function(){
+  saveConfig(configPayload()).then(function(){ toast("设置已保存"); })
+    .catch(function(e){ toast(e.message, true); });
 };
+$("saveCfg2").onclick = $("saveCfg").onclick;
+
+/* 工作台三步设置：一次保存，紧接着开刮 */
+$("quickSaveStart").onclick = function(){
+  var root = $("root").value.trim();
+  if (!root) { toast("先选择媒体目录", true); return; }
+  var presetKey = $("quickPreset").value;
+  var payload = configPayload();
+  var preset = TRANSLATE_PRESETS[presetKey] || {
+    provider: payload.jav.translate_provider || "auto",
+    model: payload.jav.translate_model || "",
+    base: payload.jav.translate_api_base || "",
+    max: payload.jav.translate_max_tokens || 1600,
+    temp: payload.jav.translate_temperature == null ? 0.7 : payload.jav.translate_temperature
+  };
+  var plotZh = $("quickPlotZh").checked;
+  var copyOn = $("quickCopyEnabled").checked;
+  var copyRoot = $("quickCopyRoot").value.trim();
+  if (copyOn && !copyRoot) { toast("填一个复制目标目录", true); return; }
+  payload.media_root = root;
+  var presetBase = preset.base;
+  if (plotZh && preset.provider === "llm" && /^local-/.test(presetKey)) {
+    // 保留已保存的本地接口地址：远程机器上它可能是 http://NAS...:3065/v1
+    var curBase = (payload.jav.translate_api_base || "").trim();
+    if (curBase && curBase !== "https://opencode.ai/zen/go/v1") presetBase = curBase;
+  }
+  payload.jav = Object.assign({}, payload.jav, {
+    plot_zh: plotZh,
+    translate_provider: plotZh ? preset.provider : payload.jav.translate_provider,
+    translate_model: plotZh ? preset.model : payload.jav.translate_model,
+    translate_api_base: plotZh ? (presetBase || payload.jav.translate_api_base) : payload.jav.translate_api_base,
+    translate_max_tokens: plotZh ? preset.max : payload.jav.translate_max_tokens,
+    translate_temperature: plotZh ? preset.temp : payload.jav.translate_temperature,
+    actor_sync: $("quickActorSync").checked,
+    copy_enabled: copyOn,
+    copy_root: copyOn ? copyRoot : ""
+  });
+  var btn = this;
+  btn.disabled = true; btn.textContent = "保存中…";
+  saveConfig(payload).then(function(){
+    S.quickEditing = false;
+    $("cfgRoot").value = root;
+    toast("配置已保存，开始刮削");
+    startJob(javPayload(false));
+  }).catch(function(e){ toast(e.message, true); })
+    .then(function(){ btn.disabled = false; btn.textContent = "保存并开始刮削"; });
+};
+$("quickPlotZh").addEventListener("change", function(){
+  S.quickEditing = true;
+  $("quickPreset").disabled = !this.checked;
+});
+$("quickPreset").addEventListener("change", function(){
+  S.quickEditing = true;
+  var p = TRANSLATE_PRESETS[this.value] || {};
+  $("quickModel").textContent = p.provider === "bing" ? "免费直译" : (p.model || "");
+});
+$("quickActorSync").addEventListener("change", function(){ S.quickEditing = true; });
+$("quickCopyEnabled").addEventListener("change", function(){
+  S.quickEditing = true;
+  $("quickCopyRoot").disabled = !this.checked;
+});
+$("quickCopyRoot").addEventListener("input", function(){ S.quickEditing = true; });
+$("root").addEventListener("input", function(){ S.quickEditing = true; });
+$("toolRootGo").onclick = function(){ go("workbench"); };
 
 /* 对接飞牛卡片的保存按钮复用统一保存逻辑（一次保存全部配置） */
 $("saveFnos").onclick = function(){ $("saveCfg").click(); };
@@ -941,6 +790,10 @@ function fillAuto(a){
   var c = (a && a.config) || {};
   if ($("autoOn").dataset.editing === "1") return;
   $("autoOn").checked = !!c.enabled;
+  $("autoPlotZh").checked = c.plot_zh !== false;
+  $("autoActorSync").checked = !!c.actor_sync;
+  $("autoFnosSync").checked = c.fnos_sync !== false;
+  $("autoClean").checked = !!c.clean_enabled;
   $("autoScan").checked = c.scan_enabled !== false;
   $("autoScanMin").value = c.scan_interval_minutes == null ? 30 : c.scan_interval_minutes;
   $("autoSettle").value = c.settle_minutes == null ? 0 : c.settle_minutes;
@@ -950,6 +803,14 @@ function fillAuto(a){
   $("qbitPass").value = c.qbit_password || "";
   $("qbitPoll").value = c.qbit_poll_seconds == null ? 45 : c.qbit_poll_seconds;
   $("autoNoImg").checked = !!c.no_images;
+  $("autoImgPolicy").value = c.image_policy || "keep";
+  $("autoForceNfo").checked = !!c.force;
+  $("autoForceImages").checked = !!c.force_images;
+  $("autoNoProbe").checked = !!c.no_probe;
+  $("autoScanRoot").value = c.scan_root || "";
+  $("autoFnosDl").checked = !!c.fnos_download_enabled;
+  $("autoFnosDb").value = c.fnos_download_db || "/usr/trim/var/downloadcenter/downloadcenter.db";
+  $("autoFnosPoll").value = c.fnos_download_poll_seconds == null ? 30 : c.fnos_download_poll_seconds;
   var st = (a && a.status) || {};
   $("autoState").innerHTML = '<span class="dot"></span>' + (c.enabled ? "运行中" : "未启用");
   $("autoState").className = "badge " + (c.enabled ? "ok" : "");
@@ -958,9 +819,13 @@ function fillAuto(a){
     $("autoState").className = "badge ok";
   }
 }
-$("saveAuto").onclick = function(){
-  api("/api/auto", {method:"POST", body:JSON.stringify({
+function autoPayload(){
+  return {
     enabled: $("autoOn").checked,
+    plot_zh: $("autoPlotZh").checked,
+    actor_sync: $("autoActorSync").checked,
+    fnos_sync: $("autoFnosSync").checked,
+    clean_enabled: $("autoClean").checked,
     scan_enabled: $("autoScan").checked,
     scan_interval_minutes: parseInt($("autoScanMin").value || "30", 10),
     settle_minutes: parseInt($("autoSettle").value || "0", 10),
@@ -969,12 +834,32 @@ $("saveAuto").onclick = function(){
     qbit_username: $("qbitUser").value.trim(),
     qbit_password: $("qbitPass").value,
     qbit_poll_seconds: parseInt($("qbitPoll").value || "45", 10),
-    no_images: $("autoNoImg").checked
-  })}).then(function(){
+    no_images: $("autoNoImg").checked,
+    image_policy: $("autoImgPolicy").value || "keep",
+    force: $("autoForceNfo").checked,
+    force_images: $("autoForceImages").checked,
+    no_probe: $("autoNoProbe").checked,
+    scan_root: $("autoScanRoot").value.trim(),
+    fnos_download_enabled: $("autoFnosDl").checked,
+    fnos_download_db: $("autoFnosDb").value.trim(),
+    fnos_download_poll_seconds: parseInt($("autoFnosPoll").value || "30", 10)
+  };
+}
+function saveAutoSettings(){
+  api("/api/auto", {method:"POST", body:JSON.stringify(autoPayload())}).then(function(){
+    $("autoOn").dataset.editing = "0";
     toast("自动刮削设置已保存");
     loadStatus();
   }).catch(function(e){ toast(e.message, true); });
-};
+}
+$("saveAuto").onclick = saveAutoSettings;
+["autoOn","autoPlotZh","autoActorSync","autoFnosSync","autoClean","autoScan","autoScanMin","autoSettle","autoQbit","qbitUrl","qbitUser","qbitPass","qbitPoll","autoNoImg","autoImgPolicy","autoForceNfo","autoForceImages","autoNoProbe","autoScanRoot","autoFnosDl","autoFnosDb","autoFnosPoll"].forEach(function(id){
+  $(id).addEventListener("change", function(){
+    $("autoOn").dataset.editing = "1";
+    if (id === "autoOn") saveAutoSettings();
+  });
+  $(id).addEventListener("input", function(){ $("autoOn").dataset.editing = "1"; });
+});
 
 /* ==================== 日志页（分级筛选） ==================== */
 function renderBigLog(){
@@ -989,11 +874,76 @@ function renderBigLog(){
 });
 $("logTask").onchange = renderBigLog;
 
+/* ==================== 翻译缓存 ==================== */
+function loadTcache(){
+  return api("/api/tcache").then(function(d){
+    $("tcacheCount").textContent = (d && d.count != null) ? d.count : "–";
+  }).catch(function(){ $("tcacheCount").textContent = "–"; });
+}
+$("tcacheClear").onclick = function(){
+  api("/api/tcache", {method:"POST", body:"{}"}).then(function(d){
+    toast("已清除翻译缓存");
+    $("tcacheCount").textContent = (d && d.count != null) ? d.count : 0;
+  }).catch(function(e){ toast(e.message, true); });
+};
+$("llmTest").onclick = function(){
+  var btn = this, box = $("llmTestResult");
+  var title = $("llmTestTitle").value.trim();
+  if (!title) { toast("先填一个测试标题", true); return; }
+  btn.disabled = true; btn.textContent = "测试中…";
+  box.textContent = "正在调用，请稍候…";
+  api("/api/translate/test", {method:"POST", body:JSON.stringify({title:title})})
+    .then(function(d){
+      var head = "[" + (d.provider || "?") + " / " + (d.model || "?") + " · " + (d.elapsed || 0) + "s]";
+      box.textContent = head + "\n\n标题：\n" + (d.title || "(空)") + "\n\n简介：\n" + (d.plot || "(空)");
+      toast("LLM 测试完成");
+    })
+    .catch(function(e){ box.textContent = "测试失败：" + e.message; toast(e.message, true); })
+    .then(function(){ btn.disabled = false; btn.textContent = "测试"; });
+};
+function actorJob(write){
+  var root = $("root").value.trim();
+  if (!root) { toast("先选择媒体目录", true); return; }
+  startJob({kind:"actors", root:root, write:!!write});
+}
+$("actorsPreview").onclick = function(){ actorJob(false); };
+$("actorsWrite").onclick = function(){
+  openRisk("确认执行演员整理",
+    "将改名/合并飞牛 person、上传头像并回写 NFO actor 段。请先备份 trimmedia.db。",
+    function(){ actorJob(true); }, "");
+};
+
+/* ==================== NFO 重译 ==================== */
+function retranslateJob(mode, write){
+  var root = $("root").value.trim() || $("cfgRoot").value.trim();
+  if (!root) { toast("先选择媒体目录", true); return; }
+  var payload = {kind:"retranslate", root:root, write:!!write};
+  if (mode === "force") payload.force = true;
+  else if (mode === "fill") { payload.fill = true; payload.force = false; }
+  else { payload.force = false; }
+  startJob(payload);
+}
+$("retranslatePreview").onclick = function(){ retranslateJob("preview", false); };
+$("retranslateFill").onclick = function(){ retranslateJob("fill", true); };
+$("retranslateWrite").onclick = function(){ retranslateJob("force", true); };
+$("saveTranslate").onclick = function(){ $("saveCfg").click(); };
+$("saveCopy").onclick = function(){ $("saveCfg").click(); };
+// 勾选/取消翻译立即保存，避免别的机器上找不到保存按钮
+$("cfgPlotZh").addEventListener("change", function(){ S.translateEditing = true; $("saveCfg").click(); });
+$("llmRecommend").onclick = function(){
+  S.translateEditing = true;
+  applyTranslatePreset("local-glm");
+  $("saveCfg").click();
+  toast("已切换到推荐配置");
+};
+$("ovRetranslate").onclick = function(){ go("translate"); };
+$("ovActors").onclick = function(){ go("tools"); };
 /* ==================== 启动 ==================== */
 loadStatus().then(fillSettings);
 setInterval(function(){
   if (!S.curJob || (S.curJob.status !== "running" && S.curJob.status !== "pending")) loadStatus();
 }, 8000);
+
+
 </script>
-</body>
-</html>
+</body></html>

@@ -13,6 +13,9 @@ chmod 755 "$DIR" "$DIR/data" "$DIR/data/logs" 2>/dev/null
 
 # 1) 代码
 install -m 0644 "$SRC/app_server.py" "$DIR/app_server.py"
+for f in "$SRC"/*.json; do
+    [ -f "$f" ] && install -m 0644 "$f" "$DIR/$(basename "$f")"
+done
 for f in "$SRC"/scripts/*; do
     [ -f "$f" ] || continue
     case "$f" in

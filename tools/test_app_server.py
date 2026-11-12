@@ -73,7 +73,7 @@ class CoverSyncHookTest(unittest.TestCase):
 
     def _job(self, kind="jav", meta=None, status="success"):
         j = a.Job(kind, "t", ["true"],
-                  meta=meta if meta is not None else {"root": "/vol2/1000/CCAV"})
+                  meta=meta if meta is not None else {"root": "/vol1/1000/Media"})
         j.status = status
         return j
 
@@ -85,12 +85,12 @@ class CoverSyncHookTest(unittest.TestCase):
              mock.patch.object(mbd_rebuild, "rebuild") as rb:
             j._after_success()
         self.assertEqual(sc.call_count, 1)
-        self.assertEqual(sc.call_args[0][0], "/vol2/1000/CCAV")
+        self.assertEqual(sc.call_args[0][0], "/vol1/1000/Media")
         rb.assert_not_called()          # 删库不再是自动行为
         self.assertIn("[封面缓存] INFO 已同步", j.lines)
 
     def test_dry_run_skips(self):
-        j = self._job(meta={"root": "/vol2/1000/CCAV", "dry": True})
+        j = self._job(meta={"root": "/vol1/1000/Media", "dry": True})
         import img_cache_sync
         with mock.patch.object(img_cache_sync, "sync_covers") as sc:
             j._after_success()

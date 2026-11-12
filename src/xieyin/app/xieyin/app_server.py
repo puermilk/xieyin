@@ -35,10 +35,11 @@ import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = os.environ.get("XIEYIN_DATA") or os.path.join(APP_DIR, "data")
 CONF_PATH = os.path.join(DATA_DIR, "config.json")
+TRANSLATE_KEY_PATH = os.path.join(DATA_DIR, "translate_key")
 LOG_DIR = os.path.join(DATA_DIR, "logs")
 SCRIPTS = os.path.join(APP_DIR, "scripts")
 WWW = os.path.join(APP_DIR, "www")
@@ -47,6 +48,7 @@ PYTHON = sys.executable or "/usr/bin/python3"
 sys.path.insert(0, SCRIPTS)
 import auto_watch  # noqa: E402
 import media_ext  # noqa: E402
+import translate_zh  # noqa: E402
 
 DEFAULT_ROOTS = [
     "/vol1/1000/Media",
@@ -58,13 +60,20 @@ DEFAULT_CONF = {
     "media_root": "",
     "proxy": "",
     # engine: race=国内直连多源竞速（默认） / legacy=原 JavBus 通道
-    "jav": {"via": "auto", "recursive": True, "engine": "race", "preflight_ttl": 600},
+    "jav": {"via": "auto", "recursive": True, "engine": "race",
+            "preflight_ttl": 600, "plot_zh": True,
+            "translate_provider": "auto", "translate_model": "GLM-5.3-Flash",
+            "translate_api_base": "", "translate_max_tokens": 1600,
+            "translate_temperature": 0.7,
+            "actor_sync": False,
+            "copy_enabled": False, "copy_root": ""},
     "tmdb": {},
     # 方案A：飞牛影视 API 直连（元数据推送，PT 目录零写入）
     "fnos": {
         "enabled": True,        # 对接飞牛影视（主模式）
-        "url": "",              # 飞牛地址，如 http://127.0.0.1:5666
-        "token": "",            # 访问令牌（Bearer）
+        "sync_meta": True,      # 刮削/整理后把本地 NFO 标题/简介写入飞牛（官方 saveEditDetail）
+        "url": "",              # 旧版推送地址（可选）
+        "token": "",            # 旧版推送令牌（可选）
         "export_nfo": False,    # 兜底选项：导出 NFO 到独立目录（兼容 Jellyfin/Emby）
         "meta_dir": "",         # 独立元数据目录（export_nfo 开启时用）
     },
@@ -81,6 +90,10 @@ DEFAULT_CONF = {
         "settle_minutes": 10,      # 稳定期：文件早于 N 分钟才刮
         "skip_pt": False,          # 1.8.0 起无 PT 保护：该值不再生效，保留仅为兼容旧配置
         "no_images": False,
+        "plot_zh": True,        # 自动刮削：标题/简介翻译
+        "actor_sync": False,    # 自动刮削：演员整理/补头像/回写 NFO
+        "fnos_sync": True,      # 自动刮削：完成后同步到飞牛影视
+        "clean_enabled": False, # 自动刮削：完成后自动整理当前目录
         "via": "auto",
     },
 }
@@ -117,6 +130,14 @@ def load_conf() -> dict:
         log(f"配置读取失败，使用默认值: {e}")
     if not conf.get("media_root"):
         conf["media_root"] = detect_default_root()
+    # 2.0.3 迁移：老配置升级后默认开启翻译，只迁移一次；用户之后仍可手动关闭
+    if not conf.get("_translation_default_v2"):
+        conf.setdefault("jav", {})["plot_zh"] = True
+        conf["_translation_default_v2"] = True
+        try:
+            save_conf(conf)
+        except Exception:
+            pass
     return conf
 
 
@@ -248,8 +269,18 @@ class Job:
         """
         meta = self.meta or {}
         root = str(meta.get("root") or "")
-        if (self.kind not in ("jav", "tmdb") or meta.get("dry")
-                or not root or self.status != "success"):
+        if meta.get("dry") or not root or self.status != "success":
+            return
+        # 文件整理会改名/删除视频：成功后先触发飞牛扫描，再同步标题/简介
+        if self.kind == "clean":
+            if str(meta.get("mode") or "") == "run":
+                self.status = "running"
+                try:
+                    self._sync_fnos_meta(root, scan=True)
+                finally:
+                    self.status = "success"
+            return
+        if self.kind not in ("jav", "tmdb"):
             return
         try:
             import img_cache_sync
@@ -261,6 +292,138 @@ class Job:
                             "如需强制重建媒体库请手动执行 mbd_rebuild")
         except Exception as e:
             self.append("[封面缓存] WARN 封面缓存同步跳过：%s" % e)
+        meta = self.meta or {}
+        only = str(meta.get("only") or "").strip()
+        dirs = [str(d) for d in (meta.get("dirs") or []) if d]
+        scopes = dirs or [root]
+        # 刮削完成后补译已有 NFO 的标题/简介（只补缺，不重复跑完整翻译）
+        if (self.kind == "jav"
+                and str((self.env or {}).get("XIEYIN_PLOT_ZH") or "") == "1"):
+            # 同步期间保持 running，前端才会继续轮询补译日志；完成后恢复 success
+            self.status = "running"
+            try:
+                for scope in scopes:
+                    self._sync_translations(scope, only=only if not dirs else "")
+            finally:
+                self.status = "success"
+        # 工作台/自动刮削勾选“演员整理”时：补头像/合并演员/回写 NFO
+        if (self.kind == "jav"
+                and str((self.env or {}).get("XIEYIN_ACTOR_SYNC") or "") == "1"):
+            self.status = "running"
+            try:
+                for scope in scopes:
+                    self._sync_actors(scope)
+            finally:
+                self.status = "success"
+        # 把最终 NFO 标题/简介写入飞牛（官方 saveEditDetail，无需旧版 push 令牌）
+        fn = load_conf().get("fnos") or {}
+        fnos_override = str((self.env or {}).get("XIEYIN_FNOS_SYNC") or "")
+        if (fnos_override != "0" and fn.get("enabled", True)
+                and fn.get("sync_meta", True)):
+            self.status = "running"
+            try:
+                for scope in scopes:
+                    self._sync_fnos_meta(scope, scan=True)
+            finally:
+                self.status = "success"
+
+    def _sync_actors(self, root: str) -> None:
+        script = os.path.join(SCRIPTS, "actor_sync_all.py")
+        if not os.path.isfile(script) or not os.path.isdir(root):
+            return
+        self.append("[演员] 整理演员名 / 补头像 / 回写 NFO ...")
+        env = os.environ.copy()
+        env.update(self.env or {})
+        env.setdefault("PYTHONUNBUFFERED", "1")
+        cmd = [PYTHON, script, "--root", root, "--photo-limit", "20", "--write"]
+        try:
+            p = subprocess.Popen(
+                cmd, cwd=APP_DIR, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1, errors="replace", env=env, start_new_session=True)
+            assert p.stdout is not None
+            for line in p.stdout:
+                self.append("[演员] " + line.rstrip())
+            rc = p.wait()
+            self.append("[演员] 完成 rc=%d" % rc)
+        except Exception as e:
+            self.append("[演员] WARN 同步跳过：%s" % e)
+
+    def _sync_fnos_meta(self, root: str, scan: bool = True) -> None:
+        script = os.path.join(SCRIPTS, "sync_fnos_meta.py")
+        if not os.path.isfile(script) or not os.path.isdir(root):
+            return
+        self.append("[飞牛] 同步标题/简介%s ..." % ("（先扫描媒体库）" if scan else ""))
+        env = os.environ.copy()
+        env.update(self.env or {})
+        env.setdefault("PYTHONUNBUFFERED", "1")
+        env.setdefault("XIEYIN_FNOS_API", "http://127.0.0.1:8005")
+        cmd = [PYTHON, script, "--root", root, "--write"]
+        if scan:
+            cmd.append("--scan")
+        meta = self.meta or {}
+        only = str(meta.get("only") or "").strip()
+        if only:
+            cmd += ["--only", only]
+        try:
+            p = subprocess.Popen(
+                cmd, cwd=APP_DIR, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1, errors="replace", env=env, start_new_session=True)
+            assert p.stdout is not None
+            for line in p.stdout:
+                self.append("[飞牛] " + line.rstrip())
+            rc = p.wait()
+            self.append("[飞牛] 完成 rc=%d" % rc)
+        except Exception as e:
+            self.append("[飞牛] WARN 同步跳过：%s" % e)
+
+    def _clean_scope(self, root: str) -> None:
+        script = os.path.join(SCRIPTS, "clean_qh.sh")
+        if not os.path.isfile(script) or not os.path.isdir(root):
+            return
+        self.append("[整理] 清理广告/垃圾/孤儿文件：%s" % root)
+        env = os.environ.copy()
+        env.update(self.env or {})
+        env["XIEYIN_BASE"] = root
+        env.setdefault("XIEYIN_PT_GUARD", "1")
+        env.setdefault("XIEYIN_KEEP_SIDECARS", "1")
+        env.setdefault("XIEYIN_CLEAN_ORPHANS", "1")
+        env.setdefault("PYTHONUNBUFFERED", "1")
+        try:
+            p = subprocess.Popen(
+                ["bash", script, "run"], cwd=APP_DIR, stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT, text=True, bufsize=1,
+                errors="replace", env=env, start_new_session=True)
+            assert p.stdout is not None
+            for line in p.stdout:
+                self.append("[整理] " + line.rstrip())
+            rc = p.wait()
+            self.append("[整理] 完成 rc=%d" % rc)
+        except Exception as e:
+            self.append("[整理] WARN 跳过：%s" % e)
+
+    def _sync_translations(self, root: str, only: str = "") -> None:
+        script = os.path.join(SCRIPTS, "retranslate_nfo.py")
+        if not os.path.isfile(script) or not os.path.isdir(root):
+            return
+        self.append("[翻译] 同步检查已有 NFO 的标题/简介：%s%s"
+                    % (root, (" · 仅 " + only) if only else ""))
+        env = os.environ.copy()
+        env.update(self.env or {})
+        env.setdefault("PYTHONUNBUFFERED", "1")
+        cmd = [PYTHON, script, "--root", root, "--write", "--fill", "--jobs", "2"]
+        if only:
+            cmd += ["--only", only]
+        try:
+            p = subprocess.Popen(
+                cmd, cwd=APP_DIR, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                text=True, bufsize=1, errors="replace", env=env, start_new_session=True)
+            assert p.stdout is not None
+            for line in p.stdout:
+                self.append("[翻译] " + line.rstrip())
+            rc = p.wait()
+            self.append("[翻译] 完成 rc=%d" % rc)
+        except Exception as e:
+            self.append("[翻译] WARN 同步跳过：%s" % e)
 
     # -- 执行 ---------------------------------------------------------
     def _run(self) -> None:
@@ -274,6 +437,15 @@ class Job:
             env = os.environ.copy()
             env.update(self.env or {})
             env.setdefault("PYTHONUNBUFFERED", "1")
+            # 自动任务：先整理本次目录（广告/垃圾/孤儿/域名前缀），再刮削
+            if (self.kind == "jav"
+                    and str(env.get("XIEYIN_CLEAN_BEFORE") or "") == "1"):
+                meta = self.meta or {}
+                dirs = [str(d) for d in (meta.get("dirs") or []) if d]
+                scopes = dirs or [str(meta.get("root") or "")]
+                for scope in scopes:
+                    if scope:
+                        self._clean_scope(scope)
             self.proc = subprocess.Popen(
                 self.cmd,
                 cwd=APP_DIR,
@@ -407,6 +579,33 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
         env["XIEYIN_TIMEOUT"] = str(int(jc["timeout"]))
     if jc.get("retries") is not None:
         env["XIEYIN_RETRIES"] = str(int(jc["retries"]))
+    plot_zh = data.get("plot_zh")
+    if plot_zh is None:
+        plot_zh = jc.get("plot_zh")
+    if plot_zh:
+        env["XIEYIN_PLOT_ZH"] = "1"
+    if jc.get("translate_provider"):
+        env["XIEYIN_TRANSLATE_PROVIDER"] = str(jc["translate_provider"])
+    if jc.get("translate_model"):
+        env["XIEYIN_LLM_MODEL"] = str(jc["translate_model"])
+    if jc.get("translate_api_base"):
+        env["XIEYIN_LLM_BASE"] = str(jc["translate_api_base"])
+    if jc.get("translate_max_tokens"):
+        env["XIEYIN_LLM_MAX_TOKENS"] = str(int(jc["translate_max_tokens"]))
+    if jc.get("translate_temperature") is not None:
+        env["XIEYIN_LLM_TEMPERATURE"] = str(float(jc["translate_temperature"]))
+    actor_sync = data.get("actor_sync")
+    if actor_sync is None:
+        actor_sync = jc.get("actor_sync")
+    if actor_sync:
+        env["XIEYIN_ACTOR_SYNC"] = "1"
+    if data.get("fnos_sync") is False:
+        env["XIEYIN_FNOS_SYNC"] = "0"
+    if data.get("clean_before"):
+        env["XIEYIN_CLEAN_BEFORE"] = "1"
+    copy_root = str(jc.get("copy_root") or "").strip()
+    if jc.get("copy_enabled") and copy_root:
+        env["XIEYIN_COPY_ROOT"] = copy_root
     if conf.get("auth_key"):
         env["XIEYIN_AUTH_KEY"] = str(conf["auth_key"])
 
@@ -438,6 +637,39 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
         return ("clean", title,
                 ["bash", os.path.join(SCRIPTS, "clean_qh.sh"), mode], env,
                 {"root": root, "mode": mode, "pt_guard": pt_guard})
+
+    if kind == "retranslate":
+        write = bool(data.get("write"))
+        fill = bool(data.get("fill"))
+        force = bool(data.get("force", not fill))
+        env["XIEYIN_PLOT_ZH"] = "1"       # 重译任务本身就是翻译，不再依赖 plot_zh 开关
+        cmd = [PYTHON, os.path.join(SCRIPTS, "retranslate_nfo.py"), "--root", root]
+        if write:
+            cmd.append("--write")
+        if force:
+            cmd.append("--force")
+        elif fill:
+            cmd.append("--fill")
+        only = str(data.get("only") or "").strip()
+        if only:
+            cmd += ["--only", only]
+        limit = int(data.get("limit") or 0)
+        if limit > 0:
+            cmd += ["--limit", str(limit)]
+        mode = "全部重译" if force else ("补缺重译" if fill else "预览")
+        return ("retranslate", "NFO 重译 · " + ("写入 · " if write else "预览 · ") + mode
+                + " · " + os.path.basename(root),
+                cmd, env, {"root": root, "write": write, "force": force, "fill": fill})
+
+    if kind == "actors":
+        write = bool(data.get("write"))
+        limit = int(data.get("photo_limit") or 20)
+        cmd = [PYTHON, os.path.join(SCRIPTS, "actor_sync_all.py"),
+               "--root", root, "--photo-limit", str(limit)]
+        if write:
+            cmd.append("--write")
+        return ("actors", "演员整理 · " + ("写入" if write else "预览") + " · " + os.path.basename(root),
+                cmd, env, {"root": root, "write": write})
 
     if kind == "jav":
         dry = bool(data.get("dry"))
@@ -476,6 +708,11 @@ def build_job(data: dict) -> tuple[str, str, list[str], dict, dict]:
             cmd += ["--limit", str(limit)]
         if dry:
             cmd.append("--dry")
+        if jc.get("copy_enabled") and copy_root:
+            if root and (os.path.abspath(copy_root) == os.path.abspath(root)
+                         or os.path.abspath(copy_root).startswith(os.path.abspath(root) + os.sep)):
+                raise ValueError("复制目录不能放在刮削目录里面")
+            cmd += ["--copy-root", copy_root]
         # 条目级并发（与界面「并发数」不同：那是单条内的多源通道数）
         if not legacy:
             try:
@@ -581,6 +818,8 @@ def status_dict() -> dict:
         "fnos": {**{k: v for k, v in (conf.get("fnos") or {}).items() if k != "token"},
                  "has_token": bool((conf.get("fnos") or {}).get("token"))},
         "has_auth_key": bool(conf.get("auth_key") or ""),
+        "has_translate_key": bool(os.path.exists(TRANSLATE_KEY_PATH)
+                                  and os.path.getsize(TRANSLATE_KEY_PATH) > 0),
         "jav": conf.get("jav") or {},
         "running": running,
         "jobs": jobs,
@@ -685,6 +924,8 @@ class Handler(BaseHTTPRequestHandler):
             self._json(status_dict())
         elif path == "/api/auto":
             self._json({"ok": True, **auto_status()})
+        elif path == "/api/tcache":
+            self._tcache_get()
         elif path == "/api/browse":
             self._json(self._browse(qs.get("path", [""])[0]))
         elif path.startswith("/api/jobs/"):
@@ -696,6 +937,10 @@ class Handler(BaseHTTPRequestHandler):
         path = urllib.parse.unquote(urllib.parse.urlsplit(self.path).path)
         if path == "/api/config":
             self._config_save()
+        elif path == "/api/translate/test":
+            self._translate_test()
+        elif path == "/api/tcache":
+            self._tcache_clear()
         elif path == "/api/auto":
             self._auto_save()
         elif path == "/api/jobs":
@@ -736,6 +981,52 @@ class Handler(BaseHTTPRequestHandler):
         parent = os.path.dirname(path.rstrip("/")) or "/"
         return {"ok": True, "path": path, "parent": parent, "entries": entries[:800]}
 
+    def _translate_test(self) -> None:
+        data = self._read_json()
+        title = str(data.get("title") or "").strip()[:300]
+        if not title:
+            return self._err("请输入测试标题")
+        conf = load_conf()
+        jc = conf.get("jav") or {}
+        env = os.environ.copy()
+        env["XIEYIN_DATA"] = DATA_DIR
+        env["XIEYIN_PLOT_ZH"] = "1"
+        for key, var in (("translate_provider", "XIEYIN_TRANSLATE_PROVIDER"),
+                         ("translate_model", "XIEYIN_LLM_MODEL"),
+                         ("translate_api_base", "XIEYIN_LLM_BASE"),
+                         ("translate_max_tokens", "XIEYIN_LLM_MAX_TOKENS"),
+                         ("translate_temperature", "XIEYIN_LLM_TEMPERATURE")):
+            if jc.get(key) not in (None, ""):
+                env[var] = str(jc[key])
+        cmd = [PYTHON, os.path.join(SCRIPTS, "test_llm.py"),
+               "--title", title, "--code", "TEST-001"]
+        try:
+            cp = subprocess.run(cmd, cwd=APP_DIR, env=env, capture_output=True,
+                                text=True, timeout=150, errors="replace")
+        except subprocess.TimeoutExpired:
+            return self._err("测试超时（150 秒）", 504)
+        raw = (cp.stdout or "").strip()
+        line = raw.splitlines()[-1] if raw else ""
+        try:
+            out = json.loads(line)
+        except Exception:
+            return self._err("测试失败：" + ((cp.stderr or raw or "无输出")[-500:]), 502)
+        self._json(out)
+
+    def _tcache_get(self) -> None:
+        try:
+            self._json({"ok": True, "count": translate_zh.cache_count()})
+        except Exception as e:
+            self._err(f"读取翻译缓存失败: {e}", 500)
+
+    def _tcache_clear(self) -> None:
+        try:
+            n = translate_zh.cache_clear()
+            log("翻译缓存已清除（%d 条）" % n)
+            self._json({"ok": True, "cleared": n, "count": 0})
+        except Exception as e:
+            self._err(f"清除翻译缓存失败: {e}", 500)
+
     def _config_save(self) -> None:
         global _fnos_token_backup
         data = self._read_json()
@@ -757,6 +1048,24 @@ class Handler(BaseHTTPRequestHandler):
         if isinstance(data.get("fnos"), dict) and "token" in data["fnos"] \
                 and not str(data["fnos"].get("token") or "").strip():
             conf.setdefault("fnos", {})["token"] = _fnos_token_backup
+        key = data.get("translate_api_key")
+        if key is not None:
+            key = str(key).strip()
+            if key:
+                try:
+                    os.makedirs(DATA_DIR, exist_ok=True)
+                    tmp = TRANSLATE_KEY_PATH + ".tmp"
+                    with open(tmp, "w", encoding="utf-8") as f:
+                        f.write(key + "\n")
+                    os.chmod(tmp, 0o600)
+                    os.replace(tmp, TRANSLATE_KEY_PATH)
+                except OSError as e:
+                    return self._err(f"保存翻译 Key 失败: {e}", 500)
+            elif data.get("translate_clear_key"):
+                try:
+                    os.remove(TRANSLATE_KEY_PATH)
+                except FileNotFoundError:
+                    pass
         try:
             save_conf(conf)
         except OSError as e:
@@ -767,16 +1076,16 @@ class Handler(BaseHTTPRequestHandler):
         data = self._read_json()
         conf = load_conf()
         auto = conf.setdefault("auto", {})
-        for key in ("enabled", "scan_enabled", "qbit_enabled", "skip_pt", "no_images"):
+        for key in ("enabled", "scan_enabled", "qbit_enabled", "fnos_download_enabled", "skip_pt", "no_images", "force", "force_images", "no_probe", "plot_zh", "actor_sync", "fnos_sync", "clean_enabled"):
             if key in data:
                 auto[key] = bool(data.get(key))
-        for key in ("scan_interval_minutes", "qbit_poll_seconds", "settle_minutes"):
+        for key in ("scan_interval_minutes", "qbit_poll_seconds", "fnos_download_poll_seconds", "settle_minutes"):
             if key in data:
                 try:
                     auto[key] = max(0, int(data.get(key)))
                 except (TypeError, ValueError):
                     return self._err("%s 必须是整数" % key)
-        for key in ("qbit_url", "qbit_username", "qbit_password", "via"):
+        for key in ("scan_root", "qbit_url", "qbit_username", "qbit_password", "via", "image_policy", "fnos_download_db"):
             if key in data:
                 auto[key] = str(data.get(key) or "").strip()
         try:

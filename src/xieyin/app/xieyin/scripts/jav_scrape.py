@@ -20,6 +20,9 @@ from datetime import datetime
 from pathlib import Path
 
 import media_ext
+import translate_zh
+import actor_names
+import copy_scraped
 
 BASE = Path("/vol1/1000/Media")
 HOST = "www.javbus.com"
@@ -408,17 +411,27 @@ def parse_page(page):
         txt(x) for x in re.findall(r'<a href="[^"]*/genre/[^"]+">([^<]+)</a>', gblock)))
 
     stars = []
+    actor_imgs = []
     for blk in re.findall(r'<div id="star_[^"]+".*?</div>\s*</div>', page, re.S):
         a = re.search(r'<div class="star-name"><a[^>]*title="([^"]+)"', blk)
         if a:
             stars.append(html.unescape(a.group(1)))
+        img = re.search(r'<img[^>]*src="([^"]+)"[^>]*title="([^"]+)"', blk)
+        if img:
+            src, nm = img.group(1), html.unescape(img.group(2))
+            if src.startswith("/"):
+                src = "https://www.javbus.com" + src
+            actor_imgs.append({"name": nm, "url": src})
     if not stars:
         stars = [html.unescape(x) for x in re.findall(r'/star/[^"]+" title="([^"]+)"', page)]
-    seen, out = set(), []
-    for s in stars:
-        if s not in seen:
-            seen.add(s); out.append(s)
-    d["actors"] = out
+    d["actors"] = actor_names.normalize_list(stars)
+    amap = {}
+    for a in actor_imgs:
+        n = actor_names.normalize(a.get("name") or "")
+        if n and a.get("url") and n not in amap:
+            amap[n] = a["url"]
+    d["actor_images"] = [{"name": n, "url": amap[n]}
+                         for n in d["actors"] if n in amap]
 
     m = re.search(r'class="bigImage" href="([^"]+)"', page)
     cov = m.group(1) if m else ""
@@ -507,6 +520,19 @@ def xml_esc(s):
         .replace(">", "&gt;").replace('"', "&quot;")
 
 
+def _split_actor_names(names):
+    """演员名归一：源站常把多个人塞进一个字符串（"某演员 某演员"），
+    拆成独立条目，否则媒体库会把整串当成一个人，共演者永远挂不上。"""
+    out = []
+    for n in (names or []):
+        if not isinstance(n, str):
+            continue
+        for part in re.split(r"[\s　]+", n.strip()):
+            if part and part not in out:
+                out.append(part)
+    return out
+
+
 def build_nfo(d, info, dirname, stem=None, folder=None):
     """stem = 视频文件主名；给出时写 <art> 图片引用（媒体服务器据此关联本地图片）。
 
@@ -516,6 +542,8 @@ def build_nfo(d, info, dirname, stem=None, folder=None):
     无前缀 poster.jpg/folder.jpg 一律不写——平铺目录里它只可能属于其中一条。
     """
     code = d.get("code") or dirname
+    d = dict(d)
+    d["actors"] = _split_actor_names(d.get("actors") or [])   # 复合演员名拆开写
     t = (d.get("title") or "").strip()
     for a in d.get("actors", []):          # 去掉标题末尾的演员名
         if a and t.endswith(a):
@@ -525,6 +553,22 @@ def build_nfo(d, info, dirname, stem=None, folder=None):
     mins = re.sub(r"[^\d]", "", str(d.get("runtime", "") or "")) or "0"
     desc = d.get("desc") or ""
     plot = desc or title
+    title_zh = ""
+    if translate_zh.enabled():
+        # 先翻标题；简介/预告文案即使源站没有 desc 也要用标题+演员+题材生成
+        title_zh = translate_zh.translate_title_zh(d)
+        zh = translate_zh.build_plot_zh(d, title_zh)
+        if zh:
+            plot = zh
+        elif title_zh:
+            plot = title_zh
+            print(f"WARN plot_zh 文案生成失败，已回退中文标题 {code}", file=sys.stderr)
+        else:
+            # 注意：这里的变量不能叫 code —— 会覆盖上面的番号 code，
+            # 导致 <num>/<title> 被写成 "no_kana"/"mask" 之类的错误码（已踩过一次）。
+            err_code, err_reason = translate_zh.last_error()
+            print(f"WARN plot_zh 失败 {err_code} {err_reason}", file=sys.stderr)
+    title_out = f"{code} {title_zh or t}".strip()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     p = ['﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>',
          "<!-- xieyin:generated -->", "<movie>"]
@@ -533,10 +577,15 @@ def build_nfo(d, info, dirname, stem=None, folder=None):
     p.append("  <customrating>NC-17</customrating>")
     p.append("  <lockdata>false</lockdata>")
     p.append(f"  <dateadded>{now}</dateadded>")
-    p.append(f"  <title>{cdata(title)}</title>")
+    p.append(f"  <title>{cdata(title_out)}</title>")
     p.append(f"  <originaltitle>{cdata(t)}</originaltitle>")
-    for a in d.get("actors", []):
-        p += ["  <actor>", f"    <name>{cdata(a)}</name>", "    <type>Actor</type>", "  </actor>"]
+    actor_thumbs = d.get("actor_thumbs") or {}
+    for i, a in enumerate(d.get("actors", []), 1):
+        block = ["  <actor>", f"    <name>{cdata(a)}</name>"]
+        if actor_thumbs.get(a):
+            block.append(f"    <thumb>{xml_esc(str(actor_thumbs[a]))}</thumb>")
+        block += ["    <type>Actor</type>", f"    <order>{i}</order>", "  </actor>"]
+        p += block
     if d.get("director"):
         p.append(f"  <director>{cdata(d['director'])}</director>")
     if year:
@@ -544,7 +593,7 @@ def build_nfo(d, info, dirname, stem=None, folder=None):
     if mins != "0":
         p.append(f"  <runtime>{mins}</runtime>")
         p.append(f"  <runtimeinseconds>{int(mins) * 60}</runtimeinseconds>")
-    p.append(f"  <sorttitle>{cdata(title)}</sorttitle>")
+    p.append(f"  <sorttitle>{cdata(title_out)}</sorttitle>")
     p.append("  <mpaa>NC-17</mpaa>")
     if d.get("releasedate"):
         p.append(f"  <premiered>{d['releasedate']}</premiered>")
@@ -603,25 +652,121 @@ def build_nfo(d, info, dirname, stem=None, folder=None):
 
 
 # ---------------------------------------------------------------- 图片
+def _column_means(im):
+    """每列亮度均值（灰度），返回 list[float]。用 PIL 缩到 1 行近似，纯 Pillow 无 numpy。"""
+    from PIL import Image
+    W = im.size[0]
+    return list(im.convert("L").resize((W, 1), Image.BILINEAR).getdata())
+
+
+def _smooth(vals, k):
+    """移动平均（窗口 k），保持长度不变。"""
+    n = len(vals)
+    half = k // 2
+    out = []
+    for i in range(n):
+        lo, hi = max(0, i - half), min(n, i + half + 1)
+        out.append(sum(vals[lo:hi]) / (hi - lo))
+    return out
+
+
+def _find_cover_split(im):
+    """横版包装图：找真实封面左边界（信息栏 -> 封面/书脊的最强下坡），作为分割点。
+
+    在 width*0.48~0.62 区间（避开信息栏里的缩略图边缘），按相邻列亮度差找下坡
+    最强处；找不到明显边缘返回 -1（调用方回退 50% + 额外左裁 6px）。
+    """
+    iw, ih = im.size
+    if iw < 40 or ih < 2:
+        return -1
+    cm = _smooth(_column_means(im), 7)
+    lo, hi = int(iw * 0.48), int(iw * 0.62)
+    half = 6
+    best, bestv = -1, -1e9
+    for i in range(lo + half, hi - half):
+        drop = cm[i - half] - cm[i + half]
+        if drop > bestv:
+            bestv, best = drop, i
+    if best < 0 or bestv < 8:      # 无明显边缘
+        return -1
+    return best
+
+
+def _clean_left_strip(im):
+    """边缘净化：裁掉左缘残留的信息栏/书脊条带（暗带或反色亮带）。
+
+    判断左缘 ~14~20 列是否相对封面正文（右侧参考）出现暗谷（书脊）或亮峰
+    （反色书脊）；是则找到条带右边界裁掉，单次最多裁 3% 宽（超过不裁，避免误伤封面）。
+    """
+    W, H = im.size
+    if W < 40:
+        return im
+    cm = _column_means(im)
+    q = W // 4
+    ref = sum(cm[q:W // 2]) / max(1, W // 2 - q)
+    m = min(20, W // 3)
+    vmin = min(cm[:m])
+    vmax = max(cm[:m])
+    dark = ref - vmin >= 30
+    bright = vmax - ref >= 30
+    if not dark and not bright:
+        return im
+    k = W
+    if dark:
+        jmin = next(i for i in range(m) if cm[i] == vmin)
+        for j in range(jmin, W):
+            if cm[j] >= vmin + 20:
+                k = j
+                break
+    else:
+        jmin = next(i for i in range(m) if cm[i] == vmax)
+        for j in range(jmin, W):
+            if cm[j] <= vmax - 20:
+                k = j
+                break
+    cap = max(1, int(W * 0.03))
+    if 0 < k <= cap:
+        return im.crop((k, 0, W, H))
+    return im
+
+
+def _poster_im(im, w=379, h=538, right_half=True):
+    """从 PIL Image 生成 2:3 竖版海报图，返回 RGB Image，不落盘。
+
+    right_half=True 时用于横版包装图（如 DMM pl 800×538 双封面）：先按边缘检测找真实
+    封面左边界（不再写死 50%），切完再做边缘净化裁掉残留书脊条带。中间裁会切出
+    『两封面各一半+剧中图』（用户实测）；竖版直接按 2:3 居中裁剪（重心略偏上），不受影响。
+
+    right_half=False 时用于 16:9 剧照（素人/配信片源）：整幅居中裁 2:3，
+    不能取右半张（那是包装图的处理方式，套在剧照上会只剩右侧一片背景）。
+    """
+    from PIL import Image
+    im = im.convert("RGB")
+    iw, ih = im.size
+    if iw > ih and right_half:
+        split = _find_cover_split(im)
+        if split < 0:                              # 无明显边缘 -> 50% 再左裁 6px
+            split = iw // 2 + 6
+        im = im.crop((split, 0, iw, ih))           # 横版取右半张
+        iw, ih = im.size
+        im = _clean_left_strip(im)                 # 切完做边缘净化
+        iw, ih = im.size
+    tw, th = w / h, iw / ih
+    if iw / ih > tw:                             # 太宽 -> 左右裁
+        nw = int(ih * tw); left = (iw - nw) // 2
+        im = im.crop((left, 0, left + nw, ih))
+    else:                                        # 太高 -> 上下裁
+        nh = int(iw / th); top = int((ih - nh) * 0.35)
+        im = im.crop((0, top, iw, top + nh))
+    return im.resize((w, h), Image.LANCZOS)
+
+
 def crop_poster(src, dst, w=379, h=538):
     try:
         from PIL import Image, ImageFile
         ImageFile.LOAD_TRUNCATED_IMAGES = True   # 图床限速常返回半截 JPEG，仍可裁出 poster
         im = Image.open(src)
-        iw, ih = im.size
-        if iw > ih:
-            # 横版=双封面合成图（如 DMM pl 800x538 左右各一张）：
-            # 右半张才是正封面，中间裁会切出『两封面各一半+剧中图』（用户实测）
-            im = im.crop((iw // 2, 0, iw, ih))
-            iw, ih = im.size
-        tw, th = w / h, iw / ih
-        if iw / ih > tw:                 # 太宽 -> 中间裁两边
-            nw = int(ih * tw); left = (iw - nw) // 2
-            im = im.crop((left, 0, left + nw, ih))
-        else:                            # 太高 -> 上下裁
-            nh = int(iw / th); top = int((ih - nh) * 0.35)
-            im = im.crop((0, top, iw, top + nh))
-        im.resize((w, h), Image.LANCZOS).save(dst, "JPEG", quality=92)
+        _poster_im(im, w, h).save(dst, "JPEG", quality=92)
         return True
     except Exception as e:
         print(f"   ! poster 裁剪失败: {e}", file=sys.stderr)
@@ -728,6 +873,12 @@ def scrape_one(sess, folder: Path, args):
 
     # 4. nfo
     nfo.write_text(build_nfo(d, info, name, stem, folder), encoding="utf-8")
+    if getattr(args, "copy_root", ""):
+        try:
+            copy_scraped.copy_scraped(d.get("code") or code, folder, video,
+                                      args.copy_root, log=lambda x: print(x, file=sys.stderr))
+        except Exception as e:
+            print("   [复制] WARN %s" % e, file=sys.stderr)
     return (f"OK    {name} <- {d['code']} | {d.get('releasedate','')} "
             f"{d.get('runtime','')} | 演员 {len(d.get('actors',[]))} | "
             f"类别 {len(d.get('genres',[]))} | {(d.get('title') or '')[:46]}")
@@ -790,6 +941,8 @@ def main():
                     help="平铺模式下的根目录（默认 /vol1/1000/Media，也可用环境变量 XIEYIN_ROOT）")
     ap.add_argument("--via", choices=["auto", "direct", "proxy"], default="auto",
                     help="通道: auto=自动探测+兜底(默认) / direct=固定IP直连优先 / proxy=代理优先")
+    ap.add_argument("--copy-root", default=os.environ.get("XIEYIN_COPY_ROOT", ""),
+                    help="刮削后复制到 <copy-root>/<番号>/（留空不复制）")
     ap.add_argument("--proxy", default="",
                     help=f"代理地址，默认探测 {PROXY_DEFAULT}（也可用环境变量 XIEYIN_PROXY）")
     args = ap.parse_args()

@@ -21,6 +21,7 @@ import http.cookiejar
 import json
 import os
 import re
+import sqlite3
 import threading
 import time
 import urllib.parse
@@ -29,6 +30,10 @@ import urllib.request
 import media_ext
 
 VIDEO_EXT = media_ext.MEDIA_EXT
+# 飞牛下载中心/qBittorrent 的“下载完成”状态并不只有 completed：
+# completed / uploading / stalledUP 都表示数据已下完（后两者是在做种）。
+DONE_STATES = {"completed", "uploading", "stalledup", "queuedup", "forcedup",
+               "pausedup", "checkingup", "moving"}
 
 
 # ================================================================ 纯函数
@@ -42,7 +47,7 @@ def has_nfo(names) -> bool:
 
 
 def is_domain_prefix(pre: str) -> bool:
-    """只认 489155.com / www.xxx.net 这类真域名，避免把 Movie.BluRay 当域名。"""
+    """只认 example.com / www.example.net 这类真域名，避免把 Movie.BluRay 当域名。"""
     if len(pre) > 40:
         return False
     return bool(re.fullmatch(
@@ -53,7 +58,7 @@ def is_domain_prefix(pre: str) -> bool:
 def is_pt_name(name: str) -> bool:
     """PT 发布名：xxx@GROUP / xxx@GROUP-10bit（@ 在名字末尾，忽略扩展名）。
 
-    域名前缀形式 489155.com@ABC-123.mp4 不算 PT。与 clean_qh.sh 保持同一套规则。
+    域名前缀形式 example.com@ABC-123.mp4 不算 PT。与 clean_qh.sh 保持同一套规则。
     只有干净的短后缀才当扩展名剥离，避免把 Movie.2024.1080p@GROUP 的 @GROUP 吃掉。
     """
     base = os.path.basename(name)
@@ -215,7 +220,10 @@ class AutoWatcher:
         self._threads = []
         self.last_scan: dict = {"at": 0, "found": 0}
         self.last_qbit: dict = {"at": 0, "found": 0, "ok": False}
+        self.last_fnos: dict = {"at": 0, "found": 0, "ok": False}
         self._qbit_seen = load_state(state_path)
+        self._fnos_seen = load_state(state_path + ".fnos")
+        self._part_warned: set = set()
         self._qbit_seen_lock = threading.Lock()
 
     # -- 生命周期 ---------------------------------------------------
@@ -223,7 +231,8 @@ class AutoWatcher:
         if self._threads:
             return
         self._stop.clear()
-        for target, name in ((self._scan_loop, "scan"), (self._qbit_loop, "qbit")):
+        for target, name in ((self._scan_loop, "scan"), (self._qbit_loop, "qbit"),
+                             (self._fnos_loop, "fnos")):
             t = threading.Thread(target=target, name="xieyin-auto-" + name, daemon=True)
             t.start()
             self._threads.append(t)
@@ -236,7 +245,8 @@ class AutoWatcher:
         with self._qbit_seen_lock:
             seen_n = len(self._qbit_seen)
         return {"scan": dict(self.last_scan), "qbit": dict(self.last_qbit),
-                "qbit_tracked": seen_n}
+                "fnos": dict(self.last_fnos),
+                "qbit_tracked": seen_n, "fnos_tracked": len(self._fnos_seen)}
 
     # -- 定时扫描 ---------------------------------------------------
     def _scan_loop(self) -> None:
@@ -257,7 +267,7 @@ class AutoWatcher:
 
     def _run_scan(self, full: dict) -> None:
         conf = full.get("auto", {})
-        root = str(conf.get("media_root") or full.get("media_root") or "")
+        root = str(conf.get("scan_root") or conf.get("media_root") or full.get("media_root") or "")
         if not root or not os.path.isdir(root):
             return
         now = time.time()
@@ -272,9 +282,120 @@ class AutoWatcher:
             return
         self.log("自动扫描：发现 %d 个待刮目录" % len(targets))
         self.trigger("jav", "自动扫描刮削 · %d 个" % len(targets),
-                     {"dirs": targets, "recursive": False,
-                      "no_images": bool(conf.get("no_images", False)),
-                      "via": conf.get("via", "auto")})
+                     self._auto_opts(full, targets))
+
+    def _auto_opts(self, full: dict, targets: list) -> dict:
+        conf = full.get("auto", {})
+        jc = full.get("jav", {})
+        return {
+            "dirs": targets,
+            "recursive": False,
+            "no_images": bool(conf.get("no_images", jc.get("no_images", False))),
+            "force": bool(conf.get("force", jc.get("force", False))),
+            "force_images": bool(conf.get("force_images", jc.get("force_images", False))),
+            "no_probe": bool(conf.get("no_probe", jc.get("no_probe", False))),
+            "image_policy": str(conf.get("image_policy") or jc.get("image_policy") or "keep"),
+            "via": conf.get("via", "auto"),
+            "plot_zh": bool(conf.get("plot_zh", jc.get("plot_zh", True))),
+            "actor_sync": bool(conf.get("actor_sync", jc.get("actor_sync", False))),
+            "fnos_sync": bool(conf.get("fnos_sync", True)),
+            "clean_before": bool(conf.get("clean_enabled", False)),
+        }
+
+    # -- 飞牛下载中心 ------------------------------------------------
+    def _fnos_loop(self) -> None:
+        last = 0.0
+        while not self._stop.is_set():
+            conf = self.conf_get().get("auto", {})
+            poll = max(10, int(conf.get("fnos_download_poll_seconds", 30)))
+            if (conf.get("enabled") and conf.get("fnos_download_enabled", False)
+                    and time.time() - last >= poll):
+                last = time.time()
+                try:
+                    self._run_fnos(self.conf_get())
+                except Exception as e:
+                    self.log("飞牛下载监听出错: %s" % e)
+            self._stop.wait(5)
+
+    def _run_fnos(self, full: dict) -> None:
+        conf = full.get("auto", {})
+        db = str(conf.get("fnos_download_db") or
+                 "/usr/trim/var/downloadcenter/downloadcenter.db")
+        if not os.path.isfile(db):
+            self.last_fnos = {"at": time.time(), "found": 0, "ok": False,
+                              "error": "数据库不存在"}
+            return
+        try:
+            con = sqlite3.connect("file:" + db + "?mode=ro", uri=True, timeout=6)
+            con.row_factory = sqlite3.Row
+            rows = [dict(r) for r in con.execute(
+                "select ID,TASK_ID,NAME,SAVE_DIR,COMPLETION_TIME,STATE,SIZE,DL_TOTAL_SIZE "
+                "from TASKS order by ID desc limit 200")]
+            con.close()
+        except Exception as e:
+            self.last_fnos = {"at": time.time(), "found": 0, "ok": False, "error": str(e)}
+            return
+        targets = []
+        changed = False
+        for r in rows:
+            state = str(r.get("STATE") or "").strip().lower()
+            if state not in DONE_STATES:
+                continue
+            size = int(r.get("SIZE") or 0)
+            done = int(r.get("DL_TOTAL_SIZE") or 0)
+            # completed 直接信；uploading/stalledUP 用体积兜底，避免半截也被当成完成
+            if state != "completed" and size > 0 and done < size * 0.995:
+                continue
+            key = "%s:%s" % (r.get("TASK_ID") or r.get("ID"), r.get("COMPLETION_TIME") or "")
+            if key in self._fnos_seen:
+                continue
+            save_dir = str(r.get("SAVE_DIR") or "").strip()
+            name = str(r.get("NAME") or "").strip()
+            if not save_dir:
+                continue
+            cand = os.path.join(save_dir, name) if name else save_dir
+            folder = cand if os.path.isdir(cand) else (
+                os.path.dirname(cand) if os.path.isfile(cand) else save_dir)
+            if not os.path.isdir(folder):
+                continue
+            try:
+                names = os.listdir(folder)
+            except OSError:
+                names = []
+            if any(n.lower().endswith(".nfo") for n in names):
+                # 已有 NFO，说明刮过了；记状态，避免每轮重复检查
+                self._fnos_seen[key] = r.get("COMPLETION_TIME") or 0
+                changed = True
+                self._part_warned.discard(folder)
+                continue
+            has_final = any(media_ext.is_video(n) and not n.lower().endswith(".part")
+                            for n in names)
+            has_part = any(n.lower().endswith(".part") and media_ext.is_video(n[:-5])
+                           for n in names)
+            if has_final:
+                if folder not in targets:
+                    targets.append(folder)
+                self._fnos_seen[key] = r.get("COMPLETION_TIME") or 0
+                changed = True
+                self._part_warned.discard(folder)
+            elif has_part:
+                # 数据下完了，但 qBittorrent 还没把 .part 改成正式扩展名。
+                # 不提前刮，避免刮到半截文件；等下一轮自动重试。
+                if folder not in self._part_warned:
+                    self.log("飞牛下载完成但仍是 .part，等待 qBittorrent 重命名：%s" % folder)
+                    self._part_warned.add(folder)
+            else:
+                self._part_warned.discard(folder)
+        if targets:
+            save_state(self.state_path + ".fnos", self._fnos_seen)
+            self.last_fnos = {"at": time.time(), "found": len(targets), "ok": True}
+            self.log("飞牛下载完成：发现 %d 个目录" % len(targets))
+            self.trigger("jav", "飞牛下载完成刮削 · %d 个" % len(targets),
+                         self._auto_opts(full, targets))
+        else:
+            if changed:
+                save_state(self.state_path + ".fnos", self._fnos_seen)
+            self.last_fnos = {"at": time.time(), "found": 0, "ok": True}
 
     # -- qBittorrent ------------------------------------------------
     def _qbit_loop(self) -> None:
