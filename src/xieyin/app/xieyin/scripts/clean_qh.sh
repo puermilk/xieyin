@@ -136,10 +136,21 @@ detect_pt() {
 
 # 删除被删视频的同名附属文件（nfo/封面/演员图/字幕），避免留下孤儿 NFO。
 drop_sidecars() {
-  local f="$1" d b stem
+  local f="$1" d b stem x media=0
   d=$(dirname -- "$f"); b=$(basename -- "$f"); stem="${b%.*}"
-  find "$d" -maxdepth 1 -type f \( -name "$stem.*" -o -name "$stem-*" \) \
-    ! -name "$b" -delete 2>/dev/null || true
+  # 同 stem 还有别的视频/STRM（如 ABC-123.mkv + ABC-123.mp4 + ABC-123.strm）时，
+  # nfo/图片是共用命名，不能跟着被删的这个容器一起删，更不能误删主视频或 STRM。
+  while IFS= read -r -d '' x; do
+    [ "$x" = "$f" ] && continue
+    if is_video "$x" || is_strm "$x"; then media=1; break; fi
+  done < <(find "$d" -maxdepth 1 -type f \( -name "$stem.*" -o -name "$stem-*" \) -print0 2>/dev/null)
+  [ "$media" = "1" ] && return 0
+  while IFS= read -r -d '' x; do
+    [ "$x" = "$f" ] && continue
+    is_video "$x" && continue
+    is_strm "$x" && continue
+    rm -f -- "$x" || true
+  done < <(find "$d" -maxdepth 1 -type f \( -name "$stem.*" -o -name "$stem-*" \) -print0 2>/dev/null)
 }
 
 # ---------- 一次清理：root 下每个目录保留最大视频，其余视频/垃圾删除 ----------
@@ -155,7 +166,8 @@ pass_cleanup() {
   # 回收站：里面的文件都是待清理的，全部删除，不再挑「最大视频」。
   if [ "$recycle" = "1" ]; then
     while IFS= read -r -d '' f; do
-      delfiles+=("$f")
+      # 即使文件被丢进回收站，.strm 也保留：它只是流指针，删了库就废了
+      is_strm "$f" || delfiles+=("$f")
     done < <(find "$root" -type f -print0 | sort -z)
     R_DEL=${#delfiles[@]}
     echo "--- [$root] 回收站待删 $R_DEL 个文件"

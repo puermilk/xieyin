@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""2.1.0 新行为测试：不生成备份、先清理、演员头像兜底、自动任务开关。"""
+"""2.1.x 新行为测试：不生成备份、先清理、演员头像兜底、自动任务开关。"""
 from __future__ import annotations
 
 import io
@@ -96,6 +96,7 @@ class CleanBeforeTest(unittest.TestCase):
             os.truncate(a / "ad.mp4", 10 * 1024 * 1024)
             (a / "MAIN-001.nfo").write_text("<movie/>", encoding="utf-8")
             (a / "MAIN-001.nfo.bak-actor").write_text("old", encoding="utf-8")
+            (a / "ad.nfo").write_text("<movie/>", encoding="utf-8")
             (b / "OTHER.mp4.part").touch()
             os.truncate(b / "OTHER.mp4.part", 10 * 1024 * 1024)
             (b / "ad.mp4").touch()
@@ -107,11 +108,46 @@ class CleanBeforeTest(unittest.TestCase):
             self.assertTrue((a / "MAIN-001.mp4").exists())
             self.assertFalse((a / "ad.mp4").exists())
             self.assertFalse((a / "MAIN-001.nfo.bak-actor").exists())
+            self.assertFalse((a / "ad.nfo").exists())
             self.assertTrue((a / "MAIN-001.nfo").exists())
             self.assertTrue((b / "OTHER.mp4.part").exists())
             self.assertTrue((b / "ad.mp4").exists(), "下载中目录必须整目录跳过")
 
 
+
+
+    def test_same_stem_media_and_strm_survive(self):
+        """删同番号小视频时，不能连带删掉主视频、STRM 和共用 NFO。"""
+        script = os.path.join(SCRIPTS, "clean_qh.sh")
+        with tempfile.TemporaryDirectory() as td:
+            a = Path(td) / "AAA-001"
+            a.mkdir()
+            for n, sz in (("AAA-001.mkv", 600), ("AAA-001.mp4", 10)):
+                (a / n).touch()
+                os.truncate(a / n, sz * 1024 * 1024)
+            (a / "AAA-001.strm").write_text("https://example.com/a\n", encoding="utf-8")
+            (a / "AAA-001.nfo").write_text("<movie/>", encoding="utf-8")
+            env = dict(os.environ, XIEYIN_BASE=td)
+            p = subprocess.run(["bash", script, "run"], env=env,
+                               capture_output=True, text=True, timeout=60)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            self.assertFalse((a / "AAA-001.mp4").exists())
+            self.assertTrue((a / "AAA-001.mkv").exists(), "主视频不能被误删")
+            self.assertTrue((a / "AAA-001.strm").exists(), "STRM 不能被误删")
+            self.assertTrue((a / "AAA-001.nfo").exists(), "共用 NFO 要保留")
+
+    def test_recycle_strm_is_kept(self):
+        """清理 #recycle 时也要保留 .strm。"""
+        script = os.path.join(SCRIPTS, "clean_qh.sh")
+        with tempfile.TemporaryDirectory() as td:
+            r = Path(td) / "#recycle"
+            r.mkdir()
+            (r / "OLD-001.strm").write_text("https://example.com/old\n", encoding="utf-8")
+            env = dict(os.environ, XIEYIN_BASE=td)
+            p = subprocess.run(["bash", script, "run"], env=env,
+                               capture_output=True, text=True, timeout=60)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            self.assertTrue((r / "OLD-001.strm").exists(), "回收站里的 STRM 也不能删")
 
 class WriteArtifactsTest(unittest.TestCase):
     def test_valid_cover_writes_full_set(self):
