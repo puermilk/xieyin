@@ -6,8 +6,9 @@
 
 顺序：
   1. fix_actor_meta.py   规范化 NFO 演员段，改名/合并飞牛 person，清理多余关联
-  2. sync_actor_photos.py 给 person.profile_path 补头像（仅 --write）
-  3. attach_actor_thumbs.py 把头像回写到 NFO <actor><thumb>
+  2. sync_actor_credits.py 把 NFO 演员补成飞牛 person + item_person
+  3. sync_actor_photos.py 给 person.profile_path 补头像（仅 --write）
+  4. attach_actor_thumbs.py 把头像回写到 NFO <actor><thumb>
 
 默认 dry-run；--write 才写入。头像抓取受 --photo-limit 限制，避免批量打源站。
 """
@@ -41,6 +42,13 @@ def main() -> int:
     rc = 0
 
     cmd = [py, os.path.join(HERE, "fix_actor_meta.py"), "--root", args.root]
+    if args.write:
+        cmd.append("--write")
+    rc |= run(cmd)
+
+    # NFO 有演员、飞牛 DB 没有 person/item_person 时补关联；
+    # 飞牛 refresh 不会重读 NFO 演员段，必须在照片同步前落库。
+    cmd = [py, os.path.join(HERE, "sync_actor_credits.py"), "--root", args.root]
     if args.write:
         cmd.append("--write")
     rc |= run(cmd)

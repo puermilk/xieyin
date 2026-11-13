@@ -193,7 +193,8 @@ def main() -> int:
                     url = ""
                 raw, used, source = aps.resolve(
                     p["name"], url,
-                    primary_fetch=lambda u: sess.fetch_url(u, referer=page_url))
+                    primary_fetch=lambda u: sess.fetch_url(u, referer=page_url),
+                    code=code)
                 if not raw:
                     # 最后兜底：用影片封面裁一张头像（DMM pl 取右半张正封面）
                     cover = find_poster(p.get("media_path") or p.get("item_path") or "")
@@ -209,7 +210,7 @@ def main() -> int:
                     raw = aps.avatar_from_cover(cbytes)
                     used, source = cover or "", "poster"
                 if not raw:
-                    print("  SKIP", p["name"], "主源、AV-League、影片封面都没有可用头像")
+                    print("  SKIP", p["name"], "主源、AV-League、Wikidata、百度百科、影片封面都没有可用头像")
                     skip += 1
                     continue
                 print("  %s -> %s (%s)" % (p["name"], used, source))

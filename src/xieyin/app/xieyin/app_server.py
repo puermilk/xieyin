@@ -35,7 +35,7 @@ import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-VERSION = "2.1.1"
+VERSION = "2.1.2"
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 DATA_DIR = os.environ.get("XIEYIN_DATA") or os.path.join(APP_DIR, "data")
 CONF_PATH = os.path.join(DATA_DIR, "config.json")
@@ -282,19 +282,10 @@ class Job:
             return
         if self.kind not in ("jav", "tmdb"):
             return
-        try:
-            import img_cache_sync
-            ok, lines = img_cache_sync.sync_covers(root, data_dir=DATA_DIR)
-            for line in lines:
-                self.append(line)
-            if not ok:
-                self.append("[封面缓存] WARN 部分条目未同步；"
-                            "如需强制重建媒体库请手动执行 mbd_rebuild")
-        except Exception as e:
-            self.append("[封面缓存] WARN 封面缓存同步跳过：%s" % e)
-        meta = self.meta or {}
         only = str(meta.get("only") or "").strip()
         dirs = [str(d) for d in (meta.get("dirs") or []) if d]
+        # 自动任务只传 dirs（本次实际刮削目录），封面/翻译/演员/飞牛都必须用它；
+        # 用全局 media_root 会扫错库，日志显示“已一致”但新封面从未上传。
         scopes = dirs or [root]
         # 刮削完成后补译已有 NFO 的标题/简介（只补缺，不重复跑完整翻译）
         if (self.kind == "jav"
@@ -326,6 +317,21 @@ class Job:
                     self._sync_fnos_meta(scope, scan=True)
             finally:
                 self.status = "success"
+        # 封面同步放在飞牛扫描之后：新条目先入库，再上传封面。
+        # 每个 scope 都是本次真实刮削目录，避免扫到错误媒体库。
+        try:
+            import img_cache_sync
+            ok_all = True
+            for scope in scopes:
+                ok, lines = img_cache_sync.sync_covers(scope, data_dir=DATA_DIR)
+                for line in lines:
+                    self.append(line)
+                ok_all = ok_all and ok
+            if not ok_all:
+                self.append("[封面缓存] WARN 部分条目未同步；"
+                            "如需强制重建媒体库请手动执行 mbd_rebuild")
+        except Exception as e:
+            self.append("[封面缓存] WARN 封面缓存同步跳过：%s" % e)
 
     def _sync_actors(self, root: str) -> None:
         script = os.path.join(SCRIPTS, "actor_sync_all.py")

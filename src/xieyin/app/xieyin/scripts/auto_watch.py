@@ -38,6 +38,28 @@ DONE_STATES = {"completed", "uploading", "stalledup", "queuedup", "forcedup",
 
 # ================================================================ 纯函数
 
+HASH_RE = re.compile(r"^[0-9a-fA-F]{32,40}$")
+
+
+def task_name_from_uri(uri: str) -> str:
+    """从 magnet / 包装 URL 的 dn= 参数取任务目录名。"""
+    m = re.search(r"(?:[?&]|^)dn=([^&]+)", uri or "")
+    if not m:
+        return ""
+    return urllib.parse.unquote_plus(m.group(1)).strip()
+
+
+def resolve_task_name(name: str, uri: str = "") -> str:
+    """NAME 为空或是 32/40 位 hash 时，回退 URI 的 dn=；都不行则返回空。"""
+    n = (name or "").strip()
+    if n and not HASH_RE.fullmatch(n):
+        return n
+    alt = task_name_from_uri(uri)
+    if alt and not HASH_RE.fullmatch(alt):
+        return alt
+    return ""
+
+
 def has_video(names) -> bool:
     return any(media_ext.is_video(n) for n in names)
 
@@ -224,6 +246,7 @@ class AutoWatcher:
         self._qbit_seen = load_state(state_path)
         self._fnos_seen = load_state(state_path + ".fnos")
         self._part_warned: set = set()
+        self._bad_name_warned: set = set()
         self._qbit_seen_lock = threading.Lock()
 
     # -- 生命周期 ---------------------------------------------------
@@ -350,12 +373,25 @@ class AutoWatcher:
             if key in self._fnos_seen:
                 continue
             save_dir = str(r.get("SAVE_DIR") or "").strip()
-            name = str(r.get("NAME") or "").strip()
-            if not save_dir:
+            name = resolve_task_name(r.get("NAME"), r.get("URI"))
+            if not save_dir or not name:
+                # NAME 为空（aria2）或是 qbt 的 hash 时，绝不能拿 SAVE_DIR
+                # 整个媒体根目录去兜底，否则会把整库当成一个任务。
+                if key not in self._bad_name_warned:
+                    self.log("飞牛下载任务名缺失/为 hash，跳过：TASK_ID=%s" %
+                             (r.get("TASK_ID") or r.get("ID")))
+                    self._bad_name_warned.add(key)
                 continue
-            cand = os.path.join(save_dir, name) if name else save_dir
-            folder = cand if os.path.isdir(cand) else (
-                os.path.dirname(cand) if os.path.isfile(cand) else save_dir)
+            cand = os.path.join(save_dir, name)
+            if os.path.isdir(cand):
+                folder = cand
+            elif os.path.isfile(cand):
+                folder = os.path.dirname(cand)
+            else:
+                if key not in self._bad_name_warned:
+                    self.log("飞牛下载任务目录不存在，跳过：%s" % cand)
+                    self._bad_name_warned.add(key)
+                continue
             if not os.path.isdir(folder):
                 continue
             try:

@@ -20,6 +20,8 @@ _MAP_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 
 _JUNK_RE = re.compile(r"[<>]|^</?[a-z]+|^<?[a-z]+>?$", re.I)
 _PLACEHOLDER = {"", "他", "未知演员", "unknown", "n/a", "null", "none"}
+_NON_ACTOR = {"中文字幕", "字幕", "中文", "中字", "无码", "無碼", "無修正",
+              "高清", "合集", "破解", "最新", "内嵌", "外挂"}
 
 # 只用于「NFO 里演员段损坏、需要从标题反推」的少量已知名字，避免把标题碎片当成人名
 COMMON_ACTORS = {"北条麻妃", "朝桐光", "并木塔子", "加濑佳奈子", "白石さゆり",
@@ -43,7 +45,7 @@ def load_map() -> dict:
 
 def is_junk(name: str) -> bool:
     n = (name or "").strip()
-    if n.lower() in _PLACEHOLDER:
+    if n.lower() in _PLACEHOLDER or n in _NON_ACTOR:
         return True
     return bool(_JUNK_RE.search(n))
 

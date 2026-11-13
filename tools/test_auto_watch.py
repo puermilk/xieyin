@@ -44,6 +44,26 @@ class PTDetectTest(unittest.TestCase):
         self.assertTrue(a.is_pt_folder("x", ["a.torrent", "b.mkv"]))
 
 
+
+class FnosTaskNameTest(unittest.TestCase):
+    def test_plain_name(self):
+        self.assertEqual(a.resolve_task_name("ROE-571-C", ""), "ROE-571-C")
+
+    def test_empty_name_uses_uri_dn(self):
+        uri = "magnet:?xt=urn:btih:abc&dn=ABC-123"
+        self.assertEqual(a.resolve_task_name("", uri), "ABC-123")
+
+    def test_hash_name_uses_uri_dn(self):
+        uri = "https://x/?magnet:?xt=urn:btih:abc&dn=kss55______cc@ROE-578"
+        self.assertEqual(a.resolve_task_name("a" * 40, uri),
+                         "kss55______cc@ROE-578")
+
+    def test_hash_without_dn_is_rejected(self):
+        self.assertEqual(a.resolve_task_name("a" * 40, "magnet:?xt=urn:btih:abc"), "")
+
+    def test_empty_name_without_dn_is_rejected(self):
+        self.assertEqual(a.resolve_task_name("", ""), "")
+
 class StabilityTest(unittest.TestCase):
     def test_old_file_is_stable(self):
         self.assertTrue(a.is_stable(NOW - 3600, NOW, 10))

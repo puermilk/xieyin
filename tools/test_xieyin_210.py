@@ -42,6 +42,11 @@ class ActorNameTest(unittest.TestCase):
         ja, cn = next(iter(pairs.items()))
         self.assertEqual(an.to_japanese(cn), ja)
 
+    def test_non_actor_label_is_junk(self):
+        self.assertTrue(an.is_junk("中文字幕"))
+        self.assertTrue(an.is_junk("无码"))
+        self.assertFalse(an.is_junk("三云彩叶"))
+
     def test_placeholder(self):
         self.assertTrue(aps.is_placeholder("https://pics.dmm.co.jp/mono/actjpgs/nowprinting.gif"))
         self.assertFalse(aps.is_placeholder("https://www.av-league.com/image/act/1/1-0.jpg"))
@@ -148,6 +153,33 @@ class CleanBeforeTest(unittest.TestCase):
                                capture_output=True, text=True, timeout=60)
             self.assertEqual(p.returncode, 0, p.stderr)
             self.assertTrue((r / "OLD-001.strm").exists(), "回收站里的 STRM 也不能删")
+
+
+class AfterSuccessScopeTest(unittest.TestCase):
+    def test_cover_sync_uses_dirs_not_global_root(self):
+        """自动任务只传 dirs 时，封面同步必须扫本次目录，不能扫全局 media_root。"""
+        import app_server as a
+        import img_cache_sync
+
+        calls = []
+        orig = img_cache_sync.sync_covers
+
+        def fake(root, data_dir=""):
+            calls.append(root)
+            return True, []
+
+        img_cache_sync.sync_covers = fake
+        try:
+            j = a.Job("jav", "t", ["true"],
+                      env={"XIEYIN_FNOS_SYNC": "0"},
+                      meta={"root": "/vol1/1000", "dirs": ["/vol2/1000/CCCAV/A"]})
+            j.status = "success"
+            j.append = lambda line: None
+            j._after_success()
+        finally:
+            img_cache_sync.sync_covers = orig
+        self.assertEqual(calls, ["/vol2/1000/CCCAV/A"])
+
 
 class WriteArtifactsTest(unittest.TestCase):
     def test_valid_cover_writes_full_set(self):
